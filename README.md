@@ -6,6 +6,15 @@ A shared environment for the Jack Henry design team to rapidly prototype interac
 
 Prototypes should encounter reality as early as possible. This playground lets designers build with real JH components — the same ones that ship to production — so layout constraints, interaction patterns, and component APIs are validated before a line of production code is written.
 
+## Prerequisites
+
+You need **Node.js** (which includes npm) installed before running anything below.
+
+- Check if you already have it: `node -v` and `npm -v` in your terminal
+- If not, install it from [nodejs.org](https://nodejs.org/) — pick the **LTS** version
+
+No Artifactory token or JH internal network access required — all JH packages are bundled in the repo.
+
 ## Quick start
 
 ```bash
@@ -13,7 +22,7 @@ Prototypes should encounter reality as early as possible. This playground lets d
 git clone https://github.com/israelgutierrez-jha/JH-Prototype-Playground.git
 cd JH-Prototype-Playground
 
-# 2. Install dependencies
+# 2. Install dependencies (all packages are bundled — no token needed)
 npm install
 
 # 3. Start the dev server

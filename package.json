@@ -17,6 +17,7 @@
     "@jack-henry/jh-icons": "file:./vendor/jack-henry-jh-icons-2.0.0-beta.8.tgz",
     "@jack-henry/jh-tokens": "file:./vendor/jack-henry-jh-tokens-2.0.0-beta.9.tgz",
     "@jack-henry/web-component-router": "file:./vendor/jack-henry-web-component-router-3.12.2.tgz",
+    "@jkhy/frontend-utils": "file:./vendor/jkhy-frontend-utils-3.14.1.tgz",
     "@jkhy/platform-tools": "file:./vendor/jkhy-platform-tools-2.0.0.tgz",
     "@lit/context": "^1.1.6",
     "lit": "3.3.1"
