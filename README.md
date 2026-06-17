@@ -57,13 +57,11 @@ See [CLAUDE.md](./CLAUDE.md) for the full component reference and patterns.
 
 ## Deploying
 
-Pushing to `main` automatically deploys to GitHub Pages via the Actions workflow. The gallery is accessible at:
+Pushing to `main` automatically deploys to GitHub Pages via the Actions workflow. The JH Prototype Playground is accessible at:
 
 ```
-https://[org].github.io/jh-prototype-playground/
+https://israelgutierrez-jha.github.io/JH-Prototype-Playground/
 ```
-
-> The repo must be **private** for GitHub Pages to restrict access to org members.
 
 ## Tech stack
 
