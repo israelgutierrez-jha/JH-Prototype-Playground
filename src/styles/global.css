@@ -1,0 +1,44 @@
+/* JH Design System tokens */
+@import '@jack-henry/jh-tokens/platforms/web/css/jh-theme-light.css';
+/* Dark theme tokens — applied when <html class="jh-theme-dark"> */
+@import '@jack-henry/jh-tokens/platforms/web/css/jh-theme-dark.css';
+
+/* Platform nav colors — not in jh-tokens; mirror what jh-platform-nav sets via
+   @media (prefers-color-scheme) in production (our vendored 2.0.0 only has the
+   light-mode query, so we provide the dark override here via the theme class). */
+:root {
+  --jh-color-global-navigation-enabled: rgb(5, 21, 56);
+  --jh-color-global-navigation-hover: rgb(10, 32, 79);
+  /* Nav icon fill — production uses #a9b0b6 in dark, white in light */
+  --proto-nav-icon-fill: var(--jh-color-content-on-primary-active);
+}
+
+.jh-theme-dark {
+  --jh-color-global-navigation-enabled: var(--jh-color-black-alpha-100);
+  --jh-color-global-navigation-hover: var(--jh-color-gray-950);
+  --proto-nav-icon-fill: #a9b0b6;
+}
+
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: var(--jh-font-family-base, system-ui, sans-serif);
+  font-size: var(--jh-font-size-200, 1rem);
+  color: var(--jh-color-content-primary-enabled, #1a1a1a);
+  background: var(--jh-color-container-page);
+}
+
+proto-app {
+  display: block;
+  height: 100vh;
+  overflow: hidden;
+}
