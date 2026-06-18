@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "tsc -noEmit && vite build",
     "preview": "vite preview",
+    "generate-docs": "tsx scripts/generate-component-docs.ts",
+    "check-docs": "tsx scripts/generate-component-docs.ts --check",
     "sync-rules": "node scripts/sync-rules.js",
+    "docs": "npm run generate-docs && npm run sync-rules",
     "postinstall": "node scripts/sync-rules.js"
   },
   "dependencies": {
@@ -23,6 +26,7 @@
     "lit": "3.3.1"
   },
   "devDependencies": {
+    "tsx": "^4.22.4",
     "typescript": "^5.6.0",
     "vite": "^5.4.0"
   }

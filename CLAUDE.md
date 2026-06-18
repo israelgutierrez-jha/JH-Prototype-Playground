@@ -102,23 +102,94 @@ export default class AccountTransferPrototype extends LitElement {
 
 All components from `@jack-henry/jh-elements`. Import path: `@jack-henry/jh-elements/components/[name]/[name].js`
 
-### Buttons & Actions
+> Components in the generated block below are sourced from the structured docs in `src/data/components/`. The hand-written sections that follow are pending migration into that dataset — as each component is added there, remove its hand-written entry here.
 
-| Component | Import | Key Props |
-|-----------|--------|-----------|
-| Button | `components/button/button.js` | `label`, `appearance` (primary/secondary/tertiary/danger), `size` (x-small/small/medium/large), `disabled`, `pending`, `href`, `block` (full-width) |
+<!-- AUTO-GENERATED:COMPONENTS START — do not edit by hand; run `npm run generate-docs` -->
+
+**Component index**
+
+| Component | Use it for |
+|-----------|------------|
+| `jh-button` | Triggers an action or navigation, with appearance variants that signal intent. |
+
+### Button (`jh-button`)
+
+Triggers an action or navigation, with appearance variants that signal intent.
+
+**Import:** `@jack-henry/jh-elements/components/button/button.js`
+
+**When to use**
+
+- Committing to an action: submit, save, continue, confirm.
+- Navigating when the destination feels like an action (use `href` for real links).
+- Signaling hierarchy in a group of choices via `appearance` (one primary action per view).
+
+**When not to use**
+
+- For low-emphasis inline navigation inside body text — prefer a plain link.
+- As a toggle for an on/off setting — use `jh-switch`.
+- To represent a selectable option in a list — use `jh-list-item`.
+
+**Props**
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `label` *(required)* | `string` | — | Visible button text. |
+| `appearance` | `'primary' \| 'secondary' \| 'tertiary' \| 'danger'` | `primary` | Visual emphasis. Use exactly one primary per view; danger for destructive actions. |
+| `size` | `'x-small' \| 'small' \| 'medium' \| 'large'` | `medium` | Control size; match the density of the surrounding context. |
+| `disabled` | `boolean` | `false` | Blocks interaction and dims the button. |
+| `pending` | `boolean` | `false` | Shows a loading spinner; use during async actions to prevent double-submits. |
+| `href` | `string` | — | Renders the button as a link to this URL. |
+| `block` | `boolean` | `false` | Stretches the button to full container width. |
+
+**Slots**
+
+- `jh-button-icon-left` — Icon placed before the label.
+- `jh-button-icon-right` — Icon placed after the label.
+
+**Examples**
+
+_Primary action_ — The single most important action on a view — submit a form, confirm a flow.
 
 ```html
 <jh-button label="Save" appearance="primary" @click=${this._save}></jh-button>
-<jh-button label="Cancel" appearance="secondary"></jh-button>
-<jh-button label="Delete" appearance="danger"></jh-button>
-<jh-button label="Loading" appearance="primary" ?pending=${this._saving}></jh-button>
+```
 
-<!-- Button with icons (slot names) -->
+_Secondary / cancel_ — A supporting action shown alongside the primary one, e.g. dismissing a dialog.
+
+```html
+<jh-button label="Cancel" appearance="secondary"></jh-button>
+```
+
+_Destructive action_ — An irreversible or data-losing action like delete; pair with a confirmation step.
+
+```html
+<jh-button label="Delete" appearance="danger"></jh-button>
+```
+
+_Async / loading state_ — A submit that triggers a network call — bind `pending` to your loading flag.
+
+```html
+<jh-button label="Submit" appearance="primary" ?pending=${this._saving} @click=${this._submit}></jh-button>
+```
+
+_With a leading icon_ — Reinforce an action with a glyph, e.g. a download or transfer button.
+
+```html
 <jh-button label="Download" appearance="secondary">
-  <jh-icon slot="jh-button-icon-left" size="small"></jh-icon>
+  <jh-icon-arrow-down-to-line slot="jh-button-icon-left" size="small"></jh-icon-arrow-down-to-line>
 </jh-button>
 ```
+
+**Gotchas**
+
+- The text is the `label` attribute, not slotted children — children are reserved for icon slots.
+- Limit to one `appearance="primary"` per view so the primary action stays unambiguous.
+- Prefer `pending` over `disabled` during async work; it communicates progress, not just unavailability.
+
+**Related:** `jh-list-item`, `jh-switch`
+
+<!-- AUTO-GENERATED:COMPONENTS END -->
 
 ### Inputs & Forms
 

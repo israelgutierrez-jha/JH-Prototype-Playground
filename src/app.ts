@@ -9,15 +9,11 @@ import './components/proto-shell.js'
 import '@jkhy/platform-tools/components/jh-platform-nav.js'
 import '@jkhy/platform-tools/components/jh-platform-header.js'
 import '@jack-henry/jh-icons/icons-wc/icon-house.js'
+import '@jack-henry/jh-icons/icons-wc/icon-table-layout.js'
+import '@jack-henry/jh-icons/icons-wc/icon-books.js'
 import '@jack-henry/jh-icons/icons-wc/icon-gear.js'
 import '@jack-henry/jh-icons/icons-wc/icon-sun.js'
 import '@jack-henry/jh-icons/icons-wc/icon-moon-stars.js'
-
-const GALLERY_NAV_ITEMS = [
-  { label: 'Prototypes', path: '#/' },
-  { label: 'Templates', path: '#/templates' },
-  { label: 'Resources', path: '#/resources' },
-]
 
 @customElement('proto-app')
 export class ProtoApp extends LitElement {
@@ -161,16 +157,24 @@ export class ProtoApp extends LitElement {
     const isTemplatesList = hash === '#/templates'
     const isResources = hash === '#/resources'
     const isSettings = hash === '#/settings'
+    const isTemplates = isTemplatesList || !!templateViewMatch
+    const isHome = !isTemplates && !isResources && !isSettings
 
     return html`
       <div class="shell">
         <div class="nav-col">
           <jh-platform-nav .productsLoading=${true}></jh-platform-nav>
           <div class="nav-links">
-            <a class="nav-link ${!isSettings ? 'active' : ''}" href="#/">
+            <a class="nav-link ${isHome ? 'active' : ''}" href="#/" title="Prototypes">
               <jh-icon-house size="small"></jh-icon-house>
             </a>
-            <a class="nav-link ${isSettings ? 'active' : ''}" href="#/settings">
+            <a class="nav-link ${isTemplates ? 'active' : ''}" href="#/templates" title="Templates">
+              <jh-icon-table-layout size="small"></jh-icon-table-layout>
+            </a>
+            <a class="nav-link ${isResources ? 'active' : ''}" href="#/resources" title="Resources">
+              <jh-icon-books size="small"></jh-icon-books>
+            </a>
+            <a class="nav-link ${isSettings ? 'active' : ''}" href="#/settings" title="Settings">
               <jh-icon-gear size="small"></jh-icon-gear>
             </a>
           </div>
@@ -197,7 +201,7 @@ export class ProtoApp extends LitElement {
             : templateViewMatch
             ? html`<proto-template-shell class="gallery-scroll" .name=${templateViewMatch[1]}></proto-template-shell>`
             : html`
-              <jh-platform-header title="JH Prototype Playground" .navItems=${GALLERY_NAV_ITEMS}></jh-platform-header>
+              <jh-platform-header title="JH Prototype Playground"></jh-platform-header>
               ${isResources
                 ? html`<proto-resources class="gallery-scroll"></proto-resources>`
                 : isTemplatesList

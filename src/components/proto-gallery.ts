@@ -69,20 +69,25 @@ export class ProtoGallery extends LitElement {
     }
 
     .toolbar {
-      padding: var(--jh-dimension-400, 2rem) var(--jh-dimension-600, 3rem);
+      padding: var(--jh-dimension-400, 2rem) var(--jh-dimension-600, 3rem) 0;
       display: flex;
       align-items: center;
-      justify-content: space-between;
       gap: var(--jh-dimension-400, 2rem);
     }
 
+    .toolbar jh-input-search {
+      flex: 1;
+      max-width: 420px;
+    }
+
     .count {
+      margin: 0 0 var(--jh-dimension-300, 1.5rem);
       font-size: var(--jh-font-size-100, 0.875rem);
       color: var(--jh-color-content-secondary-enabled, #666);
     }
 
     main {
-      padding: 0 var(--jh-dimension-600, 3rem) var(--jh-dimension-600, 3rem);
+      padding: var(--jh-dimension-400, 2rem) var(--jh-dimension-600, 3rem) var(--jh-dimension-600, 3rem);
       max-width: 800px;
     }
 
@@ -134,16 +139,21 @@ export class ProtoGallery extends LitElement {
 
     return html`
       <div class="toolbar">
-        <span class="count">${this._all.length} prototype${this._all.length !== 1 ? 's' : ''}</span>
         <jh-input-search
           label="Search prototypes"
           placeholder="Search by name, designer, or tag..."
-          style="min-width: 280px"
           @jh-input=${(e: CustomEvent) => { this._search = (e.target as HTMLInputElement).value }}
         ></jh-input-search>
       </div>
 
       <main>
+        ${protos.length > 0 ? html`
+          <p class="count">
+            ${this._search
+              ? `Showing ${protos.length} of ${this._all.length} prototype${this._all.length !== 1 ? 's' : ''}`
+              : `${this._all.length} prototype${this._all.length !== 1 ? 's' : ''}`}
+          </p>
+        ` : ''}
         ${protos.length === 0 && this._search ? html`
           <div class="empty">
             <h2>No results for "${this._search}"</h2>
