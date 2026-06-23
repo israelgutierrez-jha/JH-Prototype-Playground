@@ -15,14 +15,6 @@ export const doc: ComponentDoc = {
     'For one choice among mutually exclusive options — use `jh-radio` / `jh-radio-group`.',
     'For an immediate on/off device-style setting — use `jh-switch`.',
   ],
-  props: [
-    { name: 'label', type: 'string', description: 'Text shown beside the checkbox.' },
-    { name: 'checked', type: 'boolean', default: 'false', description: 'Whether the box is checked.' },
-    { name: 'disabled', type: 'boolean', default: 'false', description: 'Disables interaction.' },
-  ],
-  events: [
-    { name: 'jh-change', description: 'Fires when checked state changes.', payload: '(e.target as HTMLInputElement).checked' },
-  ],
   examples: [
     {
       title: 'Single checkbox',
@@ -33,6 +25,10 @@ export const doc: ComponentDoc = {
   gotchas: [
     'Read the boolean from `(e.target as HTMLInputElement).checked`, not `.value`.',
   ],
-  related: ['jh-checkbox-group', 'jh-radio', 'jh-switch'],
+  related: [
+    'jh-checkbox-group',
+    'jh-radio',
+    'jh-switch',
+  ],
   source: { storybookUrl: '', importedAt: '2026-06-23', componentVersion: '2.0.0-beta.14' },
 }

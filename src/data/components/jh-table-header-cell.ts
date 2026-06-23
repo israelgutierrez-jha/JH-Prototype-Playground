@@ -13,9 +13,6 @@ export const doc: ComponentDoc = {
   whenNotToUse: [
     'For body cells — use `jh-table-data-cell`.',
   ],
-  props: [
-    { name: 'label', type: 'string', description: 'Column header text.' },
-  ],
   examples: [
     {
       title: 'Header cells',
@@ -29,6 +26,10 @@ export const doc: ComponentDoc = {
   gotchas: [
     'Header cells belong in the row marked `slot="header"`, not in body rows.',
   ],
-  related: ['jh-table', 'jh-table-row', 'jh-table-data-cell'],
+  related: [
+    'jh-table',
+    'jh-table-row',
+    'jh-table-data-cell',
+  ],
   source: { storybookUrl: '', importedAt: '2026-06-23', componentVersion: '2.0.0-beta.14' },
 }

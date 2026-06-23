@@ -15,13 +15,6 @@ export const doc: ComponentDoc = {
     'For tabular data with multiple columns — use `jh-table`.',
     'For a single content surface — use `jh-card`.',
   ],
-  props: [
-    { name: 'label', type: 'string', description: 'Subheader shown above the group.' },
-    { name: 'accessible-label', type: 'string', description: 'Accessible name when no visible label is shown.' },
-  ],
-  slots: [
-    { name: '', description: 'Default slot — place `jh-list-item` elements inside.' },
-  ],
   examples: [
     {
       title: 'Labeled list',
@@ -35,6 +28,9 @@ export const doc: ComponentDoc = {
   gotchas: [
     'Provide `accessible-label` when you omit a visible `label` so the group is still named for assistive tech.',
   ],
-  related: ['jh-list-item', 'jh-table'],
+  related: [
+    'jh-list-item',
+    'jh-table',
+  ],
   source: { storybookUrl: '', importedAt: '2026-06-23', componentVersion: '2.0.0-beta.14' },
 }

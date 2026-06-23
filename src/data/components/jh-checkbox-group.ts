@@ -14,12 +14,6 @@ export const doc: ComponentDoc = {
     'For a single standalone checkbox — use `jh-checkbox` directly.',
     'For exactly one choice — use `jh-radio-group`.',
   ],
-  props: [
-    { name: 'label', type: 'string', description: 'Group label describing the set of options.' },
-  ],
-  slots: [
-    { name: '', description: 'Default slot — place `jh-checkbox` elements inside.' },
-  ],
   examples: [
     {
       title: 'Grouped options',
@@ -34,6 +28,9 @@ export const doc: ComponentDoc = {
   gotchas: [
     'The group provides the shared label and layout; each option is still a `jh-checkbox`.',
   ],
-  related: ['jh-checkbox', 'jh-radio-group'],
+  related: [
+    'jh-checkbox',
+    'jh-radio-group',
+  ],
   source: { storybookUrl: '', importedAt: '2026-06-23', componentVersion: '2.0.0-beta.14' },
 }

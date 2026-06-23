@@ -15,18 +15,6 @@ export const doc: ComponentDoc = {
     'For a flat list of records — use `jh-list-group` / `jh-list-item`.',
     'As a full page frame — the platform shell already owns the page.',
   ],
-  props: [
-    { name: 'headerTitle', type: 'string', description: 'Built-in header title.' },
-    { name: 'headerSubtitle', type: 'string', description: 'Built-in header subtitle.' },
-    { name: 'padding', type: "'none' | 'sm' | 'md' | 'lg'", description: 'Inner padding around default-slot content.' },
-    { name: 'showHeaderDivider', type: 'boolean', default: 'false', description: 'Shows a divider under the header.' },
-    { name: 'showFooterDivider', type: 'boolean', default: 'false', description: 'Shows a divider above the footer.' },
-  ],
-  slots: [
-    { name: '', description: 'Default slot — card body content.' },
-    { name: 'jh-card-header', description: 'Custom header content (alternative to headerTitle).' },
-    { name: 'jh-card-footer', description: 'Footer content, e.g. actions.' },
-  ],
   examples: [
     {
       title: 'Padded card',
@@ -52,6 +40,9 @@ export const doc: ComponentDoc = {
   gotchas: [
     'Use `padding` for the default slot; when you supply custom header/footer slots, pad those yourself.',
   ],
-  related: ['jh-divider', 'jh-list-group'],
+  related: [
+    'jh-divider',
+    'jh-list-group',
+  ],
   source: { storybookUrl: '', importedAt: '2026-06-23', componentVersion: '2.0.0-beta.14' },
 }

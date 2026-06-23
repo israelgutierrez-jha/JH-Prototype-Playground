@@ -13,9 +13,6 @@ export const doc: ComponentDoc = {
   whenNotToUse: [
     'For column headers — use `jh-table-header-cell`.',
   ],
-  slots: [
-    { name: '', description: 'Default slot — the cell value (text or markup).' },
-  ],
   examples: [
     {
       title: 'Data cell',
@@ -26,6 +23,10 @@ export const doc: ComponentDoc = {
   gotchas: [
     'Cell content is slotted children, not a `label` attribute (unlike the header cell).',
   ],
-  related: ['jh-table', 'jh-table-row', 'jh-table-header-cell'],
+  related: [
+    'jh-table',
+    'jh-table-row',
+    'jh-table-header-cell',
+  ],
   source: { storybookUrl: '', importedAt: '2026-06-23', componentVersion: '2.0.0-beta.14' },
 }

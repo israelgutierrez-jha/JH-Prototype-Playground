@@ -17,34 +17,6 @@ export const doc: ComponentDoc = {
     'As a toggle for an on/off setting — use `jh-switch`.',
     'To represent a selectable option in a list — use `jh-list-item`.',
   ],
-  props: [
-    { name: 'label', type: 'string', required: true, description: 'Visible button text.' },
-    {
-      name: 'appearance',
-      type: "'primary' | 'secondary' | 'tertiary' | 'danger'",
-      default: 'primary',
-      description: 'Visual emphasis. Use exactly one primary per view; danger for destructive actions.',
-    },
-    {
-      name: 'size',
-      type: "'x-small' | 'small' | 'medium' | 'large'",
-      default: 'medium',
-      description: 'Control size; match the density of the surrounding context.',
-    },
-    { name: 'disabled', type: 'boolean', default: 'false', description: 'Blocks interaction and dims the button.' },
-    {
-      name: 'pending',
-      type: 'boolean',
-      default: 'false',
-      description: 'Shows a loading spinner; use during async actions to prevent double-submits.',
-    },
-    { name: 'href', type: 'string', description: 'Renders the button as a link to this URL.' },
-    { name: 'block', type: 'boolean', default: 'false', description: 'Stretches the button to full container width.' },
-  ],
-  slots: [
-    { name: 'jh-button-icon-left', description: 'Icon placed before the label.' },
-    { name: 'jh-button-icon-right', description: 'Icon placed after the label.' },
-  ],
   examples: [
     {
       title: 'Primary action',
@@ -79,10 +51,9 @@ export const doc: ComponentDoc = {
     'Limit to one `appearance="primary"` per view so the primary action stays unambiguous.',
     'Prefer `pending` over `disabled` during async work; it communicates progress, not just unavailability.',
   ],
-  related: ['jh-list-item', 'jh-switch'],
-  source: {
-    storybookUrl: '',
-    importedAt: '2026-06-18',
-    componentVersion: '',
-  },
+  related: [
+    'jh-list-item',
+    'jh-switch',
+  ],
+  source: { storybookUrl: '', importedAt: '2026-06-18', componentVersion: '' },
 }

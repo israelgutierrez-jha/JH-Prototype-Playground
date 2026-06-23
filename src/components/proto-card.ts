@@ -50,7 +50,7 @@ export class ProtoCard extends LitElement {
     }
 
     .title {
-      font-size: var(--jh-font-size-300, 1.125rem);
+      font-size: var(--jh-font-size-450, 1.125rem);
       font-weight: var(--jh-font-weight-semibold, 600);
       color: var(--jh-color-content-primary-enabled, #1a1a1a);
       margin: 0;
@@ -64,7 +64,7 @@ export class ProtoCard extends LitElement {
     .description {
       font-size: var(--jh-font-size-200, 1rem);
       color: var(--jh-color-content-secondary-enabled, #666);
-      line-height: var(--jh-font-line-height-300, 1.5);
+      line-height: 1.5;
       flex: 1;
       margin: 0;
     }

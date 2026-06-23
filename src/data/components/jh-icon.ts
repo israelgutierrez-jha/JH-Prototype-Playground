@@ -14,9 +14,6 @@ export const doc: ComponentDoc = {
   whenNotToUse: [
     'As the only label on an interactive control without an accessible name — pair with text or a tooltip.',
   ],
-  props: [
-    { name: 'size', type: "'x-small' | 'small' | 'medium' | 'large' | 'x-large'", default: 'medium', description: 'Icon size from the shared scale.' },
-  ],
   examples: [
     {
       title: 'Using a named icon',
@@ -28,6 +25,9 @@ export const doc: ComponentDoc = {
     'Each glyph is a separate element imported from `@jack-henry/jh-icons/icons-wc/icon-<name>.js` and used as `<jh-icon-<name>>`.',
     'Icon-only buttons need an accessible label (e.g. a `jh-tooltip` or `aria-label`).',
   ],
-  related: ['jh-button', 'jh-list-item'],
+  related: [
+    'jh-button',
+    'jh-list-item',
+  ],
   source: { storybookUrl: '', importedAt: '2026-06-23', componentVersion: '2.0.0-beta.14' },
 }

@@ -15,10 +15,6 @@ export const doc: ComponentDoc = {
     'For single-column lists of records — use `jh-list-group` / `jh-list-item`.',
     'For dense key/value detail of one record — a definition layout reads better.',
   ],
-  slots: [
-    { name: 'header', description: 'A `jh-table-row` (slot="header") of `jh-table-header-cell`s.' },
-    { name: '', description: 'Default slot — body `jh-table-row` elements.' },
-  ],
   examples: [
     {
       title: 'Basic table',
@@ -40,6 +36,11 @@ export const doc: ComponentDoc = {
   gotchas: [
     'The header is a `jh-table-row` with `slot="header"`; body rows go in the default slot.',
   ],
-  related: ['jh-table-row', 'jh-table-header-cell', 'jh-table-data-cell', 'jh-list-group'],
+  related: [
+    'jh-table-row',
+    'jh-table-header-cell',
+    'jh-table-data-cell',
+    'jh-list-group',
+  ],
   source: { storybookUrl: '', importedAt: '2026-06-23', componentVersion: '2.0.0-beta.14' },
 }

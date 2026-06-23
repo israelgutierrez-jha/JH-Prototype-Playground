@@ -34,6 +34,13 @@ export interface ComponentProp {
   default?: string
   required?: boolean
   description: string
+  /**
+   * Curation tier (set by the API generator, not by hand):
+   *  - `common` — the design-facing props most prototypes need.
+   *  - `advanced` — a11y, native passthrough, and low-level props; hidden by
+   *    default in the browser and demoted in the AI docs to reduce noise.
+   */
+  tier?: 'common' | 'advanced'
 }
 
 export interface ComponentEvent {
@@ -76,6 +83,17 @@ export interface ComponentDoc {
   whenToUse: string[]
   /** Anti-patterns and the component to prefer instead. */
   whenNotToUse?: string[]
+  /**
+   * Attribute names to force into the `common` tier even if the curation
+   * heuristic would otherwise demote them. Hand-authored; everything about the
+   * API itself (the props/events/slots below) is generated from the manifest.
+   */
+  featuredProps?: string[]
+  /**
+   * API surface. Hand-authored intent files OMIT these — they are derived from
+   * the package's Custom Elements Manifest and merged in at load/build time
+   * (see `_api.generated.ts`). They remain here so consumers see one shape.
+   */
   props?: ComponentProp[]
   events?: ComponentEvent[]
   slots?: ComponentSlot[]
@@ -93,4 +111,15 @@ export interface ComponentDoc {
     /** Version of `@jack-henry/jh-elements` the doc was verified against. */
     componentVersion?: string
   }
+}
+
+/**
+ * The generated API surface for one component, derived from the Custom Elements
+ * Manifest. Keyed by tag in `_api.generated.ts` and merged onto the matching
+ * hand-authored intent doc.
+ */
+export interface ComponentApi {
+  props: ComponentProp[]
+  events: ComponentEvent[]
+  slots: ComponentSlot[]
 }

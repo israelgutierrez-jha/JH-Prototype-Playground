@@ -13,9 +13,6 @@ export const doc: ComponentDoc = {
   whenNotToUse: [
     'For a single tag — use `jh-tag` on its own.',
   ],
-  slots: [
-    { name: '', description: 'Default slot — place `jh-tag` elements inside.' },
-  ],
   examples: [
     {
       title: 'Tag set',
@@ -30,6 +27,8 @@ export const doc: ComponentDoc = {
   gotchas: [
     'Handles spacing and wrapping for you — avoid adding custom margins to the inner tags.',
   ],
-  related: ['jh-tag'],
+  related: [
+    'jh-tag',
+  ],
   source: { storybookUrl: '', importedAt: '2026-06-23', componentVersion: '2.0.0-beta.14' },
 }

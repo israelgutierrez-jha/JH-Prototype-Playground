@@ -14,13 +14,6 @@ export const doc: ComponentDoc = {
     'For multi-select — use `jh-checkbox-group`.',
     'For long option lists — use `jh-select`.',
   ],
-  props: [
-    { name: 'label', type: 'string', description: 'Group label describing the choice.' },
-    { name: 'name', type: 'string', description: 'Shared name applied to the radios within.' },
-  ],
-  slots: [
-    { name: '', description: 'Default slot — place `jh-radio` elements inside.' },
-  ],
   examples: [
     {
       title: 'Single-choice group',
@@ -34,6 +27,10 @@ export const doc: ComponentDoc = {
   gotchas: [
     'Keep options visible and few; beyond a handful, a `jh-select` reads more cleanly.',
   ],
-  related: ['jh-radio', 'jh-checkbox-group', 'jh-select'],
+  related: [
+    'jh-radio',
+    'jh-checkbox-group',
+    'jh-select',
+  ],
   source: { storybookUrl: '', importedAt: '2026-06-23', componentVersion: '2.0.0-beta.14' },
 }

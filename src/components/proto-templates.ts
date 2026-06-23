@@ -52,7 +52,7 @@ export class ProtoTemplates extends LitElement {
 
     .title {
       margin: 0;
-      font-size: var(--jh-font-size-300, 1.125rem);
+      font-size: var(--jh-font-size-450, 1.125rem);
       font-weight: var(--jh-font-weight-semibold, 600);
       color: var(--jh-color-content-primary-enabled);
     }
@@ -61,7 +61,7 @@ export class ProtoTemplates extends LitElement {
       margin: 0;
       font-size: var(--jh-font-size-100, 0.875rem);
       color: var(--jh-color-content-secondary-enabled);
-      line-height: var(--jh-font-line-height-300, 1.5);
+      line-height: 1.5;
       flex: 1;
     }
 

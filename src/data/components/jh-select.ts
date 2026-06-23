@@ -14,21 +14,6 @@ export const doc: ComponentDoc = {
     'For a small set of visible options — radios are faster to scan.',
     'For multi-select — use a `jh-checkbox-group`.',
   ],
-  props: [
-    { name: 'label', type: 'string', description: 'Field label.' },
-    { name: 'placeholder', type: 'string', description: 'Text shown before a selection is made.' },
-    { name: 'value', type: 'string', description: 'Currently selected value.' },
-    { name: 'required', type: 'boolean', default: 'false', description: 'Marks the field as required.' },
-    { name: 'disabled', type: 'boolean', default: 'false', description: 'Disables interaction.' },
-    { name: 'error-text', type: 'string', description: 'Error message and error state.' },
-    { name: 'helper-text', type: 'string', description: 'Supporting text below the field.' },
-  ],
-  events: [
-    { name: 'jh-change', description: 'Fires when the selection changes.', payload: '(e.target as HTMLSelectElement).value' },
-  ],
-  slots: [
-    { name: '', description: 'Default slot — place `jh-list-item` options with `value` and `label` attributes.' },
-  ],
   examples: [
     {
       title: 'Basic select',
@@ -44,6 +29,9 @@ export const doc: ComponentDoc = {
     'Options are `jh-list-item` elements, but inside a select use the `value` and `label` attributes (not `primary-text`).',
     'For datasets like US states, pair with `@jack-henry/jh-datasets` helpers to populate and pre-select options.',
   ],
-  related: ['jh-list-item', 'jh-radio-group'],
+  related: [
+    'jh-list-item',
+    'jh-radio-group',
+  ],
   source: { storybookUrl: '', importedAt: '2026-06-23', componentVersion: '2.0.0-beta.14' },
 }

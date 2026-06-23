@@ -15,13 +15,6 @@ export const doc: ComponentDoc = {
     'For brief, transient confirmations that auto-dismiss — use `jh-toast`.',
     'For a numeric count indicator — use `jh-badge`.',
   ],
-  props: [
-    { name: 'type', type: "'alert' | 'banner'", description: 'alert = inline message; banner = full-width top-of-page message.' },
-    { name: 'appearance', type: "'positive' | 'neutral' | 'negative'", description: 'positive = success, negative = error, neutral = info/warning.' },
-  ],
-  slots: [
-    { name: '', description: 'Default slot — the message content (text is slotted, not an attribute).' },
-  ],
   examples: [
     {
       title: 'Inline error',
@@ -43,6 +36,9 @@ export const doc: ComponentDoc = {
     'The message is slotted content, not a `message` attribute.',
     'Map appearance to meaning: negative = error, positive = success, neutral = info/warning.',
   ],
-  related: ['jh-toast', 'jh-badge'],
+  related: [
+    'jh-toast',
+    'jh-badge',
+  ],
   source: { storybookUrl: '', importedAt: '2026-06-23', componentVersion: '2.0.0-beta.14' },
 }

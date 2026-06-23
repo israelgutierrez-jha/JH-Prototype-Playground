@@ -16,24 +16,11 @@ export const doc: ComponentDoc = {
     'For multi-line text — use `jh-input-textarea`.',
     'For choosing from a fixed set of options — use `jh-select` or radios.',
   ],
-  props: [
-    { name: 'label', type: 'string', description: 'Field label shown above the control.' },
-    { name: 'placeholder', type: 'string', description: 'Hint text shown when the field is empty.' },
-    { name: 'value', type: 'string', description: 'Current field value.' },
-    { name: 'required', type: 'boolean', default: 'false', description: 'Marks the field as required.' },
-    { name: 'disabled', type: 'boolean', default: 'false', description: 'Disables interaction.' },
-    { name: 'error-text', type: 'string', description: 'Error message; also puts the field in an error state.' },
-    { name: 'helper-text', type: 'string', description: 'Supporting text shown below the field.' },
-  ],
-  events: [
-    { name: 'jh-input', description: 'Fires on each keystroke as the user types.', payload: '(e.target as HTMLInputElement).value' },
-    { name: 'jh-change', description: 'Fires on blur or commit.', payload: '(e.target as HTMLInputElement).value' },
-  ],
   examples: [
     {
       title: 'Basic field',
-      useCase: 'A standard labeled text field with placeholder guidance.',
-      code: `<jh-input label="Account nickname" placeholder="e.g. Vacation fund"></jh-input>`,
+      useCase: 'A standard labeled text field with helper-text guidance.',
+      code: `<jh-input label="Account nickname" helper-text="e.g. Vacation fund"></jh-input>`,
     },
     {
       title: 'Reading the value',
@@ -50,6 +37,13 @@ export const doc: ComponentDoc = {
     'Read the value from events via `(e.target as HTMLInputElement).value`, or synchronously with `this.renderRoot.querySelector(\'jh-input\')?.value`.',
     'Setting `error-text` both displays the message and switches the field into its error styling.',
   ],
-  related: ['jh-input-email', 'jh-input-password', 'jh-input-search', 'jh-input-telephone', 'jh-input-textarea', 'jh-select'],
+  related: [
+    'jh-input-email',
+    'jh-input-password',
+    'jh-input-search',
+    'jh-input-telephone',
+    'jh-input-textarea',
+    'jh-select',
+  ],
   source: { storybookUrl: '', importedAt: '2026-06-23', componentVersion: '2.0.0-beta.14' },
 }

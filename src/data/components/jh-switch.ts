@@ -14,14 +14,6 @@ export const doc: ComponentDoc = {
     'For choices confirmed later on form submit — a `jh-checkbox` sets the right expectation.',
     'For mutually exclusive options — use radios.',
   ],
-  props: [
-    { name: 'label', type: 'string', description: 'Text describing the setting.' },
-    { name: 'checked', type: 'boolean', default: 'false', description: 'Whether the switch is on.' },
-    { name: 'disabled', type: 'boolean', default: 'false', description: 'Disables interaction.' },
-  ],
-  events: [
-    { name: 'jh-change', description: 'Fires when toggled.', payload: '(e.target as HTMLInputElement).checked' },
-  ],
   examples: [
     {
       title: 'Setting toggle',
@@ -32,6 +24,8 @@ export const doc: ComponentDoc = {
   gotchas: [
     'Switches imply the change is immediate — if you need a save step, prefer `jh-checkbox`.',
   ],
-  related: ['jh-checkbox'],
+  related: [
+    'jh-checkbox',
+  ],
   source: { storybookUrl: '', importedAt: '2026-06-23', componentVersion: '2.0.0-beta.14' },
 }

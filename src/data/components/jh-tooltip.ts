@@ -15,24 +15,22 @@ export const doc: ComponentDoc = {
     'For essential instructions — use visible helper text instead; tooltips are easy to miss and inaccessible on touch.',
     'For rich or interactive content — use a popover/dialog.',
   ],
-  props: [
-    { name: 'content', type: 'string', description: 'The tooltip text.' },
-  ],
-  slots: [
-    { name: '', description: 'Default slot — the trigger element the tooltip wraps.' },
-  ],
   examples: [
     {
       title: 'Icon explanation',
       useCase: 'Explain what an icon-only button does.',
-      code: `<jh-tooltip content="Refresh balances">
+      code: `<jh-tooltip position="top">
   <jh-button label="Refresh" appearance="tertiary"></jh-button>
+  <span slot="jh-tooltip-content">Refresh balances</span>
 </jh-tooltip>`,
     },
   ],
   gotchas: [
     'Tooltips are non-essential by nature — never hide required information behind one.',
+    'The hint text goes in the `jh-tooltip-content` slot, not an attribute; the default slot is the trigger.',
   ],
-  related: ['jh-button'],
+  related: [
+    'jh-button',
+  ],
   source: { storybookUrl: '', importedAt: '2026-06-23', componentVersion: '2.0.0-beta.14' },
 }

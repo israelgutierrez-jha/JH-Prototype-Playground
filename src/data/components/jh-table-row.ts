@@ -13,9 +13,6 @@ export const doc: ComponentDoc = {
   whenNotToUse: [
     'For a single-column list row — use `jh-list-item`.',
   ],
-  slots: [
-    { name: '', description: 'Default slot — `jh-table-header-cell` or `jh-table-data-cell` elements.' },
-  ],
   examples: [
     {
       title: 'Body row',
@@ -29,6 +26,10 @@ export const doc: ComponentDoc = {
   gotchas: [
     'Add `slot="header"` to the row that contains header cells.',
   ],
-  related: ['jh-table', 'jh-table-header-cell', 'jh-table-data-cell'],
+  related: [
+    'jh-table',
+    'jh-table-header-cell',
+    'jh-table-data-cell',
+  ],
   source: { storybookUrl: '', importedAt: '2026-06-23', componentVersion: '2.0.0-beta.14' },
 }

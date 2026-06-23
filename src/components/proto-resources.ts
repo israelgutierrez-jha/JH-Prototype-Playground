@@ -10,10 +10,11 @@ import '@jack-henry/jh-elements/components/table/table.js'
 import '@jack-henry/jh-elements/components/table-row/table-row.js'
 import '@jack-henry/jh-elements/components/table-header-cell/table-header-cell.js'
 import '@jack-henry/jh-elements/components/table-data-cell/table-data-cell.js'
+import '@jack-henry/jh-elements/components/button/button.js'
 import '@jack-henry/jh-icons/icons-wc/icon-arrow-up-right-from-square.js'
 import { RESOURCES, type Resource } from '../data/resources.js'
 import { COMPONENT_DOCS } from '../data/components/index.js'
-import type { ComponentDoc } from '../data/components/types.js'
+import type { ComponentDoc, ComponentProp } from '../data/components/types.js'
 // Side-effect import: registers every documented component so previews render.
 import '../data/components/_registry.generated.js'
 
@@ -92,7 +93,7 @@ export class ProtoResources extends LitElement {
       margin: 0 0 var(--jh-dimension-500, 2.5rem);
       font-size: var(--jh-font-size-200, 1rem);
       color: var(--jh-color-content-secondary-enabled);
-      line-height: var(--jh-font-line-height-300, 1.5);
+      line-height: 1.5;
     }
 
     .when {
@@ -121,7 +122,7 @@ export class ProtoResources extends LitElement {
       margin: 0;
       padding-left: var(--jh-dimension-400, 2rem);
       color: var(--jh-color-content-primary-enabled);
-      line-height: var(--jh-font-line-height-300, 1.5);
+      line-height: 1.5;
     }
 
     li {
@@ -130,6 +131,10 @@ export class ProtoResources extends LitElement {
 
     .group {
       margin-bottom: var(--jh-dimension-600, 3rem);
+    }
+
+    .advanced {
+      margin-top: var(--jh-dimension-300, 1.5rem);
     }
 
     .example {
@@ -168,7 +173,7 @@ export class ProtoResources extends LitElement {
       background: var(--jh-color-container-page);
       overflow-x: auto;
       font-size: var(--jh-font-size-100, 0.875rem);
-      line-height: var(--jh-font-line-height-300, 1.5);
+      line-height: 1.5;
       color: var(--jh-color-content-primary-enabled);
     }
 
@@ -183,6 +188,12 @@ export class ProtoResources extends LitElement {
 
   @state() private _search = ''
   @state() private _selectedTag = COMPONENT_DOCS[0]?.tag ?? ''
+  @state() private _showAdvanced = false
+
+  private _select(tag: string) {
+    this._selectedTag = tag
+    this._showAdvanced = false
+  }
 
   private _open(url: string) {
     window.open(url, '_blank', 'noopener,noreferrer')
@@ -233,7 +244,7 @@ export class ProtoResources extends LitElement {
           Browse JH components with guidance on when to use them and live examples.
         </p>
         ${COMPONENT_DOCS.length === 0
-          ? html`<p class="empty">No components documented yet. Run <code>/add-component</code> to add the first one.</p>`
+          ? html`<p class="empty">No components documented yet. Run <code>/document-component</code> to add the first one.</p>`
           : this._renderBrowser()}
       </div>
     `
@@ -257,8 +268,8 @@ export class ProtoResources extends LitElement {
                 secondary-text=${d.summary}
                 tabindex="0"
                 ?selected=${d.tag === this._selectedTag}
-                @click=${() => { this._selectedTag = d.tag }}
-                @keydown=${(e: KeyboardEvent) => e.key === 'Enter' && (this._selectedTag = d.tag)}
+                @click=${() => this._select(d.tag)}
+                @keydown=${(e: KeyboardEvent) => e.key === 'Enter' && this._select(d.tag)}
               ></jh-list-item>
             `)}
             ${filtered.length === 0
@@ -269,6 +280,54 @@ export class ProtoResources extends LitElement {
         <div class="detail">
           ${this._selected ? this._renderDetail(this._selected) : ''}
         </div>
+      </div>
+    `
+  }
+
+  private _propTable(props: ComponentProp[]) {
+    return html`
+      <jh-table>
+        <jh-table-row slot="header">
+          <jh-table-header-cell label="Prop"></jh-table-header-cell>
+          <jh-table-header-cell label="Type"></jh-table-header-cell>
+          <jh-table-header-cell label="Default"></jh-table-header-cell>
+          <jh-table-header-cell label="Description"></jh-table-header-cell>
+        </jh-table-row>
+        ${props.map(p => html`
+          <jh-table-row>
+            <jh-table-data-cell>${p.name}${p.required ? ' *' : ''}</jh-table-data-cell>
+            <jh-table-data-cell>${p.type}</jh-table-data-cell>
+            <jh-table-data-cell>${p.default ?? '—'}</jh-table-data-cell>
+            <jh-table-data-cell>${p.description}</jh-table-data-cell>
+          </jh-table-row>
+        `)}
+      </jh-table>
+    `
+  }
+
+  private _renderProps(d: ComponentDoc) {
+    if (!d.props?.length) return ''
+    const common = d.props.filter(p => p.tier !== 'advanced')
+    const advanced = d.props.filter(p => p.tier === 'advanced')
+    return html`
+      <div class="group">
+        <p class="block-label">Props</p>
+        ${common.length ? this._propTable(common) : ''}
+        ${advanced.length
+          ? html`
+            <div class="advanced">
+              <jh-button
+                appearance="tertiary"
+                size="small"
+                label=${this._showAdvanced
+                  ? 'Hide advanced props'
+                  : `Show ${advanced.length} advanced prop${advanced.length !== 1 ? 's' : ''} (a11y & native passthrough)`}
+                @click=${() => { this._showAdvanced = !this._showAdvanced }}
+              ></jh-button>
+              ${this._showAdvanced ? this._propTable(advanced) : ''}
+            </div>
+          `
+          : ''}
       </div>
     `
   }
@@ -310,29 +369,7 @@ export class ProtoResources extends LitElement {
         `
         : ''}
 
-      ${d.props?.length
-        ? html`
-          <div class="group">
-            <p class="block-label">Props</p>
-            <jh-table>
-              <jh-table-row slot="header">
-                <jh-table-header-cell label="Prop"></jh-table-header-cell>
-                <jh-table-header-cell label="Type"></jh-table-header-cell>
-                <jh-table-header-cell label="Default"></jh-table-header-cell>
-                <jh-table-header-cell label="Description"></jh-table-header-cell>
-              </jh-table-row>
-              ${d.props.map(p => html`
-                <jh-table-row>
-                  <jh-table-data-cell>${p.name}${p.required ? ' *' : ''}</jh-table-data-cell>
-                  <jh-table-data-cell>${p.type}</jh-table-data-cell>
-                  <jh-table-data-cell>${p.default ?? '—'}</jh-table-data-cell>
-                  <jh-table-data-cell>${p.description}</jh-table-data-cell>
-                </jh-table-row>
-              `)}
-            </jh-table>
-          </div>
-        `
-        : ''}
+      ${this._renderProps(d)}
 
       ${d.gotchas?.length
         ? html`

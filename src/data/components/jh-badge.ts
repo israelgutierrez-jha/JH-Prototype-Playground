@@ -15,10 +15,6 @@ export const doc: ComponentDoc = {
     'For text status labels like "Active" or "Pending" — use `jh-tag`.',
     'For full messages — use `jh-notification`.',
   ],
-  props: [
-    { name: 'count', type: 'string', description: 'The number to display (as a string).' },
-    { name: 'maxCount', type: 'number', description: 'Caps the displayed number, e.g. 99 shows "99+".' },
-  ],
   examples: [
     {
       title: 'Count badge',
@@ -35,6 +31,9 @@ export const doc: ComponentDoc = {
     'Numeric/dot only — for text status indicators use `jh-tag`.',
     '`count` is a string attribute, not a number.',
   ],
-  related: ['jh-tag', 'jh-notification'],
+  related: [
+    'jh-tag',
+    'jh-notification',
+  ],
   source: { storybookUrl: '', importedAt: '2026-06-23', componentVersion: '2.0.0-beta.14' },
 }
