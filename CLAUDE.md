@@ -102,191 +102,76 @@ export default class AccountTransferPrototype extends LitElement {
 
 All components from `@jack-henry/jh-elements`. Import path: `@jack-henry/jh-elements/components/[name]/[name].js`
 
-### Buttons & Actions
+> The component reference below is generated from the structured docs in `src/data/components/` — edit those files and run `npm run docs`; never edit between the markers by hand. (The Platform Shell and Data Helpers sections further down are not `jh-elements` components and remain hand-written.)
 
-| Component | Import | Key Props |
-|-----------|--------|-----------|
-| Button | `components/button/button.js` | `label`, `appearance` (primary/secondary/tertiary/danger), `size` (x-small/small/medium/large), `disabled`, `pending`, `href`, `block` (full-width) |
+<!-- AUTO-GENERATED:COMPONENTS START — do not edit by hand; run `npm run generate-docs` -->
 
-```html
-<jh-button label="Save" appearance="primary" @click=${this._save}></jh-button>
-<jh-button label="Cancel" appearance="secondary"></jh-button>
-<jh-button label="Delete" appearance="danger"></jh-button>
-<jh-button label="Loading" appearance="primary" ?pending=${this._saving}></jh-button>
+This is a compact index — one line per component. **For the full API**
+(props, events, slots) read `src/data/components/_api.generated.ts`; for
+examples, gotchas, and detailed intent read the component's file at
+`src/data/components/<tag>.ts`. Both are browsable in the app **Resources**
+tab. Open the relevant file for exact attributes — do not guess them.
 
-<!-- Button with icons (slot names) -->
-<jh-button label="Download" appearance="secondary">
-  <jh-icon slot="jh-button-icon-left" size="small"></jh-icon>
-</jh-button>
-```
+#### Actions
 
-### Inputs & Forms
+- `jh-button` — Triggers an action or navigation, with appearance variants that signal intent. _Import:_ `@jack-henry/jh-elements/components/button/button.js` — _when:_ Committing to an action: submit, save, continue, confirm.
 
-| Component | Import | Key Props |
-|-----------|--------|-----------|
-| Input (text) | `components/input/input.js` | `label`, `placeholder`, `value`, `required`, `disabled`, `error-text`, `helper-text` |
-| Email | `components/input-email/input-email.js` | same as input |
-| Password | `components/input-password/input-password.js` | same as input |
-| Search | `components/input-search/input-search.js` | same as input |
-| Telephone | `components/input-telephone/input-telephone.js` | same as input |
-| Textarea | `components/input-textarea/input-textarea.js` | `label`, `rows`, `placeholder` |
-| Checkbox | `components/checkbox/checkbox.js` | `label`, `checked`, `disabled` |
-| Checkbox Group | `components/checkbox-group/checkbox-group.js` | `label` — wrap multiple `jh-checkbox` inside |
-| Radio | `components/radio/radio.js` | `label`, `value`, `checked`, `name` |
-| Radio Group | `components/radio-group/radio-group.js` | `label`, `name` — wrap multiple `jh-radio` inside |
-| Switch | `components/switch/switch.js` | `label`, `checked`, `disabled` |
-| Select | `components/select/select.js` | `label`, `placeholder`, `value`, `required`, `disabled`, `error-text`, `helper-text` — slot `jh-list-item` elements inside |
+#### Inputs & Forms
 
-```html
-<jh-select label="Account type" required>
-  <jh-list-item value="checking" label="Checking"></jh-list-item>
-  <jh-list-item value="savings" label="Savings"></jh-list-item>
-  <jh-list-item value="money-market" label="Money Market"></jh-list-item>
-</jh-select>
-```
+- `jh-checkbox` — Toggles a single independent boolean option on or off. _Import:_ `@jack-henry/jh-elements/components/checkbox/checkbox.js` — _when:_ A single opt-in/opt-out choice — accept terms, enable a setting.
+- `jh-checkbox-group` — Groups related checkboxes under a shared label for multi-select choices. _Import:_ `@jack-henry/jh-elements/components/checkbox-group/checkbox-group.js` — _when:_ Letting the user pick zero or more options from a related set — alert types, account features.
+- `jh-input` — Single-line text field for free-form entry, with label, helper, and error states. _Import:_ `@jack-henry/jh-elements/components/input/input.js` — _when:_ Collecting a single line of free-form text — names, account nicknames, memos.
+- `jh-input-email` — Text field specialized for email entry, with email keyboard and format validation. _Import:_ `@jack-henry/jh-elements/components/input-email/input-email.js` — _when:_ Collecting an email address — sign-in, contact info, statement delivery.
+- `jh-input-password` — Masked text field for secret entry, with a show/hide affordance. _Import:_ `@jack-henry/jh-elements/components/input-password/input-password.js` — _when:_ Collecting a password or other secret the user should not see in plain text by default.
+- `jh-input-search` — Text field specialized for search, with a search icon and clear affordance. _Import:_ `@jack-henry/jh-elements/components/input-search/input-search.js` — _when:_ Filtering or searching a list, table, or gallery.
+- `jh-input-telephone` — Text field specialized for phone numbers, with telephone keyboard and formatting. _Import:_ `@jack-henry/jh-elements/components/input-telephone/input-telephone.js` — _when:_ Collecting a phone number — contact info, two-factor setup, alerts.
+- `jh-input-textarea` — Multi-line text field for longer free-form entry. _Import:_ `@jack-henry/jh-elements/components/input-textarea/input-textarea.js` — _when:_ Collecting more than one line of text — notes, memos, descriptions, messages.
+- `jh-input-url` — Text field specialized for web address entry, with URL keyboard and format validation. _Import:_ `@jack-henry/jh-elements/components/input-url/input-url.js` — _when:_ Collecting a web address — website, link to a document, social or profile URL.
+- `jh-radio` — A single option within a mutually exclusive set of choices. _Import:_ `@jack-henry/jh-elements/components/radio/radio.js` — _when:_ Presenting one option among a small, mutually exclusive set — always inside a `jh-radio-group`.
+- `jh-radio-group` — Groups radios under a shared label so the user picks exactly one option. _Import:_ `@jack-henry/jh-elements/components/radio-group/radio-group.js` — _when:_ Choosing exactly one option from a small visible set — delivery method, account type.
+- `jh-select` — Dropdown for choosing one option from a list, with label and validation states. _Import:_ `@jack-henry/jh-elements/components/select/select.js` — _when:_ Choosing one option from a longer list where showing all choices would crowd the layout — state, account, category.
+- `jh-switch` — Toggles a setting on or off, typically taking effect immediately. _Import:_ `@jack-henry/jh-elements/components/switch/switch.js` — _when:_ A binary setting that applies right away — enable notifications, dark mode, paperless.
 
-Reading a field's value — listen to `@jh-change` or `@jh-input` events:
-```ts
-private _handleInput(e: CustomEvent) {
-  this._value = (e.target as HTMLInputElement).value
-}
-// In template:
-<jh-input label="Name" @jh-input=${this._handleInput}></jh-input>
-```
+#### Layout & Containers
 
-Or read synchronously via `this.renderRoot.querySelector('jh-input')?.value`.
+- `jh-card` — A surface that groups related content, with optional header and footer regions. _Import:_ `@jack-henry/jh-elements/components/card/card.js` — _when:_ Grouping related content or actions into a distinct surface — account summaries, forms, panels.
+- `jh-divider` — A thin horizontal rule that separates content, with optional inset spacing. _Import:_ `@jack-henry/jh-elements/components/divider/divider.js` — _when:_ Visually separating sections or groups within a surface.
 
-### Layout & Containers
+#### Feedback & Status
 
-| Component | Import | Key Props |
-|-----------|--------|-----------|
-| Card | `components/card/card.js` | `headerTitle`, `headerSubtitle`, `padding` (none/sm/md/lg), `showHeaderDivider`, `showFooterDivider` — slots: default, `jh-card-header`, `jh-card-footer` |
-| Divider | `components/divider/divider.js` | `orientation` (horizontal/vertical) |
+- `jh-badge` — A small numeric or dot indicator for counts, typically anchored to an icon. _Import:_ `@jack-henry/jh-elements/components/badge/badge.js` — _when:_ Showing an unread or pending count on an icon or item — notifications, messages.
+- `jh-notification` — Inline or full-width message conveying status — success, info, or error. _Import:_ `@jack-henry/jh-elements/components/notification/notification.js` — _when:_ Communicating the result of an action or a persistent state — validation errors, save success, system info.
+- `jh-progress` — A bar showing completion toward a known total. _Import:_ `@jack-henry/jh-elements/components/progress/progress.js` — _when:_ Showing determinate progress — multi-step flow completion, upload percentage, goal funding.
+- `jh-toast` — A brief, transient message that confirms an action and auto-dismisses. _Import:_ `@jack-henry/jh-elements/components/toast/toast.js` — _when:_ Confirming a quick, successful action without interrupting the flow — "Copied", "Transfer sent".
+- `jh-toast-controller` — A singleton host that renders and manages toasts, queued via a global event. _Import:_ `@jack-henry/jh-elements/components/toast-controller/toast-controller.js` — _when:_ Mount once near the app root so anywhere in the app can raise a toast.
+- `jh-tooltip` — A small popover that explains a trigger element on hover or focus. _Import:_ `@jack-henry/jh-elements/components/tooltip/tooltip.js` — _when:_ Clarifying an icon-only control or terse label with a short hint.
 
-```html
-<!-- Simple card with padding -->
-<jh-card padding="md">
-  content goes here
-</jh-card>
+#### Lists
 
-<!-- Card with built-in header -->
-<jh-card headerTitle="Account Summary" headerSubtitle="As of today" showHeaderDivider>
-  content goes here
-</jh-card>
+- `jh-list-group` — A container that groups list items under an optional subheader. _Import:_ `@jack-henry/jh-elements/components/list-group/list-group.js` — _when:_ Displaying a set of records or navigation rows — accounts, transactions, people.
+- `jh-list-item` — A single row showing primary/secondary text and metadata, with optional leading/trailing slots. _Import:_ `@jack-henry/jh-elements/components/list-item/list-item.js` — _when:_ Representing one record or navigation row inside a `jh-list-group` or `jh-menu`.
 
-<!-- Card with custom header slot -->
-<jh-card>
-  <div slot="jh-card-header" style="padding: var(--jh-dimension-400, 2rem)">Custom header</div>
-  <div style="padding: var(--jh-dimension-400, 2rem)">content</div>
-</jh-card>
-```
+#### Navigation
 
-### Feedback & Status
+- `jh-menu` — A list of actions or options, typically shown from a trigger. _Import:_ `@jack-henry/jh-elements/components/menu/menu.js` — _when:_ Offering a set of actions or choices in an overflow/context menu — row actions, "more" menus.
 
-| Component | Import | Key Props |
-|-----------|--------|-----------|
-| Notification | `components/notification/notification.js` | `type` (alert/banner), `appearance` (positive/neutral/negative) — message is **slotted content**, not an attribute |
-| Progress | `components/progress/progress.js` | `value` (0–100), `max` |
-| Badge | `components/badge/badge.js` | `count` (string number), `maxCount` (number) — **numeric/dot badge only**, not for text labels; use `jh-tag` for text status indicators |
-| Toast | `components/toast/toast.js` | `message`, `type` |
-| Tooltip | `components/tooltip/tooltip.js` | `content`, wraps trigger element |
+#### Tags
 
-```html
-<!-- type="alert" = inline notification, type="banner" = full-width top banner -->
-<!-- appearance: negative=error, positive=success, neutral=info/warning -->
-<jh-notification type="alert" appearance="negative">Something went wrong</jh-notification>
-<jh-notification type="alert" appearance="positive">Saved successfully!</jh-notification>
-<jh-notification type="alert" appearance="neutral">Here is some information.</jh-notification>
-<jh-notification type="banner" appearance="negative">System maintenance scheduled.</jh-notification>
+- `jh-tag` — A compact text label for statuses, categories, or dismissible selections. _Import:_ `@jack-henry/jh-elements/components/tag/tag.js` — _when:_ Showing a short text status or category — "Active", "Pending", "Savings".
+- `jh-tag-group` — Lays out a set of related tags with consistent spacing and wrapping. _Import:_ `@jack-henry/jh-elements/components/tag-group/tag-group.js` — _when:_ Displaying multiple tags together — a list of categories, applied filters, or attributes.
 
-<!-- Badge is for numeric counts/dots only -->
-<jh-badge count="5"></jh-badge>
-<jh-badge count="150" maxCount="99"></jh-badge>
+#### Data
 
-<jh-progress value=${this._percent} max="100"></jh-progress>
-```
+- `jh-table` — A data table that arranges rows and columns of structured records. _Import:_ `@jack-henry/jh-elements/components/table/table.js` — _when:_ Displaying structured, multi-column data that benefits from aligned columns — transactions, reports.
+- `jh-table-data-cell` — A body cell holding one value within a table row. _Import:_ `@jack-henry/jh-elements/components/table-data-cell/table-data-cell.js` — _when:_ Holding a single value in a body `jh-table-row`; content is slotted.
+- `jh-table-header-cell` — A column header cell within a table header row. _Import:_ `@jack-henry/jh-elements/components/table-header-cell/table-header-cell.js` — _when:_ Labeling a column inside a `jh-table-row` with `slot="header"`.
+- `jh-table-row` — A row within a table — a header row or a body row of cells. _Import:_ `@jack-henry/jh-elements/components/table-row/table-row.js` — _when:_ Grouping header cells (`slot="header"`) or data cells into a single table row.
 
-### Lists & Navigation
+#### Icons
 
-| Component | Import | Key Props |
-|-----------|--------|-----------|
-| List Group | `components/list-group/list-group.js` | `label` (subheader), `accessible-label` — default slot accepts `jh-list-item` |
-| List Item | `components/list-item/list-item.js` | `primary-text`, `secondary-text`, `primary-metadata`, `secondary-metadata`, `selected`, `disabled`, `show-divider`, `divider-inset` — slots: `jh-list-item-left`, `jh-list-item-content`, `jh-list-item-metadata`, `jh-list-item-right` |
-| Menu | `components/menu/menu.js` | slotted `jh-list-item` elements |
+- `jh-icon` — Renders a JH icon at a standard size; individual glyphs ship as their own elements. _Import:_ `@jack-henry/jh-elements/components/icon/icon.js` — _when:_ Adding a recognizable glyph to reinforce an action, status, or list row.
 
-```html
-<!-- Static list -->
-<jh-list-group label="Accounts">
-  <jh-list-item primary-text="Checking ···1234" secondary-text="$4,200.00"></jh-list-item>
-  <jh-list-item primary-text="Savings ···5678" secondary-text="$12,500.00"></jh-list-item>
-</jh-list-group>
-
-<!-- Interactive list with selection -->
-<jh-list-group>
-  ${items.map(item => html`
-    <jh-list-item
-      primary-text=${item.label}
-      secondary-text=${item.balance}
-      tabindex="0"
-      ?selected=${this._selected === item.id}
-      @click=${() => { this._selected = item.id }}
-    ></jh-list-item>
-  `)}
-</jh-list-group>
-
-<!-- With icon slots -->
-<jh-list-item>
-  <jh-icon-user slot="jh-list-item-left"></jh-icon-user>
-  <div slot="jh-list-item-content">Ivan Gutierrez</div>
-  <div slot="jh-list-item-metadata">Admin</div>
-</jh-list-item>
-```
-
-> **Note:** When `jh-list-item` is used inside `jh-select` as an option, use `value` and `label` attributes instead — those are select-specific.
-
-### Icons
-
-| Component | Import | Key Props |
-|-----------|--------|-----------|
-| Icon | `components/icon/icon.js` | `size` (x-small/small/medium/large/x-large, default: medium) — renders icons from `@jack-henry/jh-icons` |
-
-```html
-import '@jack-henry/jh-elements/components/icon/icon.js'
-import '@jack-henry/jh-icons/icons-wc/jh-icon-transfer.js'
-
-<jh-icon-transfer size="medium"></jh-icon-transfer>
-```
-
-### Tags
-
-| Component | Import | Key Props |
-|-----------|--------|-----------|
-| Tag | `components/tag/tag.js` | `label`, `removable` |
-| Tag Group | `components/tag-group/tag-group.js` | wraps `jh-tag` elements |
-
-### Data Tables
-
-| Component | Import |
-|-----------|--------|
-| Table | `components/table/table.js` |
-| Table Header Cell | `components/table-header-cell/table-header-cell.js` |
-| Table Row | `components/table-row/table-row.js` |
-| Table Data Cell | `components/table-data-cell/table-data-cell.js` |
-
-```html
-<jh-table>
-  <jh-table-row slot="header">
-    <jh-table-header-cell label="Account"></jh-table-header-cell>
-    <jh-table-header-cell label="Balance"></jh-table-header-cell>
-  </jh-table-row>
-  ${accounts.map(a => html`
-    <jh-table-row>
-      <jh-table-data-cell>${a.name}</jh-table-data-cell>
-      <jh-table-data-cell>${a.balance}</jh-table-data-cell>
-    </jh-table-row>
-  `)}
-</jh-table>
-```
+<!-- AUTO-GENERATED:COMPONENTS END -->
 
 ### Platform Shell (`@jkhy/platform-tools`)
 
@@ -390,32 +275,46 @@ const processed = manageSelectDataset({
 
 Use these in `static styles = css\`...\`` instead of raw values.
 
-### Spacing (multiples of 4px)
+### Spacing — `--jh-dimension-*` (PIXEL values; the number is an index, not px/rem)
 ```
 --jh-dimension-50   = 2px
---jh-dimension-100  = 4px (or 0.5rem)
---jh-dimension-200  = 8px (or 1rem)  ← small gap
---jh-dimension-300  = 12px (or 1.5rem) ← medium gap
---jh-dimension-400  = 16px (or 2rem)  ← large gap / card padding
---jh-dimension-500  = 24px (or 2.5rem)
---jh-dimension-600  = 32px (or 3rem)  ← section padding
---jh-dimension-800  = 48px (or 4rem)
---jh-dimension-1200 = 64px (or 6rem)
+--jh-dimension-100  = 4px
+--jh-dimension-200  = 8px     ← small gap
+--jh-dimension-300  = 12px    ← medium gap
+--jh-dimension-400  = 16px    ← large gap / card padding
+--jh-dimension-500  = 20px
+--jh-dimension-600  = 24px    ← section padding
+--jh-dimension-800  = 32px
+--jh-dimension-1000 = 40px
+--jh-dimension-1200 = 48px
+--jh-dimension-1600 = 64px
 ```
+> Some existing playground chrome passes a rem fallback (e.g. `var(--jh-dimension-600, 3rem)`). That fallback is **inert** — the token is always defined, so the real px value wins. Don't trust the rem hint.
 
-### Typography
+### Typography — `--jh-font-size-*` (PIXEL values)
 ```
---jh-font-size-100 = 0.875rem (small/label)
---jh-font-size-200 = 1rem     (body)
---jh-font-size-300 = 1.125rem (subheading)
---jh-font-size-400 = 1.25rem  (heading)
---jh-font-size-500 = 1.5rem   (large heading)
---jh-font-size-600 = 2rem     (display)
+--jh-font-size-250 = 10px
+--jh-font-size-300 = 12px
+--jh-font-size-350 = 14px   ← small / label
+--jh-font-size-400 = 16px   ← body
+--jh-font-size-450 = 18px   ← subheading
+--jh-font-size-500 = 20px   ← heading
+--jh-font-size-600 = 24px   ← large heading
+--jh-font-size-700 = 28px
+--jh-font-size-800 = 32px   ← display
 --jh-font-weight-regular  = 400
 --jh-font-weight-semibold = 600
 --jh-font-weight-bold     = 700
---jh-font-line-height-300 = 1.5 (body)
 ```
+> There is **no** `--jh-font-size-100` or `-200`. Code that references them works only because the token is undefined and the rem fallback applies. Prefer the real tokens above. Note `-300`/`-400`/`-500`/`-600` **do** exist but are smaller than a `100`-scale would suggest (e.g. `-400 = 16px`, not 20px) — using them where you meant a larger size renders smaller than intended.
+
+**Line-height — important:** the `--jh-font-line-height-*` tokens are **pixel
+values**, not unitless ratios (e.g. `--jh-font-line-height-300 = 12px`,
+`-400 = 16px`, `-500 = 20px`, `-600 = 24px`). Do **not** write
+`line-height: var(--jh-font-line-height-300)` for body copy — 12px is smaller
+than the text and lines will overlap. For wrapping body text, use a unitless
+`line-height: 1.5` (or a px token that matches the font size, e.g.
+`--jh-font-line-height-600` for 16px body).
 
 ### Colors
 

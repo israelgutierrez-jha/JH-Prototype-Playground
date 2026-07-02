@@ -1,19 +1,70 @@
 import { LitElement, html, css } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
+import { createRef, ref } from 'lit/directives/ref.js'
 import type { PrototypeMeta } from './proto-card.js'
 import '@jack-henry/jh-elements/components/input-search/input-search.js'
 import '@jack-henry/jh-elements/components/list-group/list-group.js'
 import '@jack-henry/jh-elements/components/list-item/list-item.js'
+import '@jack-henry/jh-elements/components/button/button.js'
+import '@jack-henry/jh-elements/components/notification/notification.js'
+import '@jack-henry/jh-elements/components/input/input.js'
+import '@jack-henry/jh-elements/components/input-url/input-url.js'
+import '@jack-henry/jh-elements/components/input-textarea/input-textarea.js'
+import '@jack-henry/jh-icons/icons-wc/icon-arrow-up-right-from-square.js'
+
+const NEW_PROTOTYPE_PROMPT =
+  'I want to create a new prototype in the JH Prototype Playground. ' +
+  'Please run /new-prototype to scaffold it, then help me build it using only JH components.'
+
+const STORAGE_KEY = 'jh-external-prototypes'
+
+interface ExternalEntry {
+  id: string
+  title: string
+  url: string
+  designer: string
+  description: string
+  createdAt: string
+}
+
+/** External links are stored per-browser in localStorage (no backend yet). */
+function loadExternal(): ExternalEntry[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? (parsed as ExternalEntry[]) : []
+  } catch {
+    return []
+  }
+}
+
+function saveExternal(entries: ExternalEntry[]) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries))
+}
 
 interface PrototypeEntry extends PrototypeMeta {
   designer: string
   name: string
 }
 
+/** Common shape the gallery list renders, from both local protos and links. */
+interface GalleryItem {
+  kind: 'local' | 'external'
+  title: string
+  description: string
+  designer: string
+  createdAt: string
+  tags: string[]
+  href?: string
+  id?: string
+  url?: string
+}
+
 interface MonthGroup {
   label: string
   key: string
-  entries: PrototypeEntry[]
+  entries: GalleryItem[]
 }
 
 function loadPrototypes(): PrototypeEntry[] {
@@ -47,8 +98,8 @@ function monthLabel(key: string) {
   return new Date(year, month - 1).toLocaleDateString('en-US', opts)
 }
 
-function groupByMonth(entries: PrototypeEntry[]): MonthGroup[] {
-  const map = new Map<string, PrototypeEntry[]>()
+function groupByMonth(entries: GalleryItem[]): MonthGroup[] {
+  const map = new Map<string, GalleryItem[]>()
   for (const entry of entries) {
     const key = monthKey(entry.createdAt)
     if (!map.has(key)) map.set(key, [])
@@ -61,6 +112,10 @@ function groupByMonth(entries: PrototypeEntry[]): MonthGroup[] {
   }))
 }
 
+function todayISO(): string {
+  return new Date().toISOString().slice(0, 10)
+}
+
 @customElement('proto-gallery')
 export class ProtoGallery extends LitElement {
   static styles = css`
@@ -69,20 +124,36 @@ export class ProtoGallery extends LitElement {
     }
 
     .toolbar {
-      padding: var(--jh-dimension-400, 2rem) var(--jh-dimension-600, 3rem);
+      padding: var(--jh-dimension-400, 2rem) var(--jh-dimension-600, 3rem) 0;
       display: flex;
       align-items: center;
-      justify-content: space-between;
       gap: var(--jh-dimension-400, 2rem);
     }
 
+    .toolbar jh-input-search {
+      flex: 1;
+      max-width: 420px;
+    }
+
+    .toolbar .actions {
+      margin-left: auto;
+      display: flex;
+      gap: var(--jh-dimension-200, 1rem);
+    }
+
+    .notice {
+      padding: var(--jh-dimension-300, 1.5rem) var(--jh-dimension-600, 3rem) 0;
+      max-width: 800px;
+    }
+
     .count {
+      margin: 0 0 var(--jh-dimension-300, 1.5rem);
       font-size: var(--jh-font-size-100, 0.875rem);
       color: var(--jh-color-content-secondary-enabled, #666);
     }
 
     main {
-      padding: 0 var(--jh-dimension-600, 3rem) var(--jh-dimension-600, 3rem);
+      padding: var(--jh-dimension-400, 2rem) var(--jh-dimension-600, 3rem) var(--jh-dimension-600, 3rem);
       max-width: 800px;
     }
 
@@ -96,6 +167,13 @@ export class ProtoGallery extends LitElement {
       padding-bottom: var(--jh-dimension-400);
     }
 
+    .item-right {
+      display: flex;
+      align-items: center;
+      gap: var(--jh-dimension-200, 1rem);
+      --jh-icon-color-fill: var(--jh-color-content-secondary-enabled);
+    }
+
     .empty {
       padding: var(--jh-dimension-1200, 6rem) 0;
       color: var(--jh-color-content-secondary-enabled, #666);
@@ -107,15 +185,96 @@ export class ProtoGallery extends LitElement {
       font-weight: var(--jh-font-weight-semibold, 600);
       color: var(--jh-color-content-primary-enabled);
     }
+
+    dialog {
+      border: none;
+      border-radius: var(--jh-border-radius-300, 12px);
+      padding: var(--jh-dimension-600, 3rem);
+      width: min(92vw, 460px);
+      background: var(--jh-color-container-primary-enabled);
+      color: var(--jh-color-content-primary-enabled);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    dialog::backdrop {
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    .dialog-title {
+      margin: 0 0 var(--jh-dimension-400, 2rem);
+      font-size: var(--jh-font-size-500, 1.5rem);
+      font-weight: var(--jh-font-weight-semibold, 600);
+    }
+
+    .field {
+      display: block;
+      margin-bottom: var(--jh-dimension-400, 2rem);
+    }
+
+    .field jh-input,
+    .field jh-input-url,
+    .field jh-input-textarea {
+      display: block;
+      width: 100%;
+    }
+
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--jh-dimension-200, 1rem);
+      margin-top: var(--jh-dimension-500, 2.5rem);
+    }
   `
 
   @state() private _search = ''
-  private _all = loadPrototypes()
+  @state() private _copied = false
+  @state() private _external: ExternalEntry[] = loadExternal()
+  @state() private _fUrl = ''
+  @state() private _fTitle = ''
+  @state() private _fDesigner = ''
+  @state() private _fDesc = ''
 
-  private get _filtered() {
+  private _all = loadPrototypes()
+  private _dialogRef = createRef<HTMLDialogElement>()
+
+  private async _copyNewPrototype() {
+    try {
+      await navigator.clipboard.writeText(NEW_PROTOTYPE_PROMPT)
+      this._copied = true
+      setTimeout(() => { this._copied = false }, 4000)
+    } catch {
+      this._copied = false
+    }
+  }
+
+  private get _items(): GalleryItem[] {
+    const local: GalleryItem[] = this._all.map(p => ({
+      kind: 'local',
+      title: p.title,
+      description: p.description,
+      designer: p.designer,
+      createdAt: p.createdAt,
+      tags: p.tags,
+      href: `#/prototypes/${p.designer}/${p.name}`,
+    }))
+    const external: GalleryItem[] = this._external.map(e => ({
+      kind: 'external',
+      title: e.title,
+      description: e.description,
+      designer: e.designer,
+      createdAt: e.createdAt,
+      tags: [],
+      id: e.id,
+      url: e.url,
+    }))
+    return [...local, ...external].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+  }
+
+  private get _filtered(): GalleryItem[] {
     const q = this._search.toLowerCase()
-    if (!q) return this._all
-    return this._all.filter(
+    const items = this._items
+    if (!q) return items
+    return items.filter(
       p =>
         p.title.toLowerCase().includes(q) ||
         p.designer.toLowerCase().includes(q) ||
@@ -124,8 +283,60 @@ export class ProtoGallery extends LitElement {
     )
   }
 
-  private _navigate(p: PrototypeEntry) {
-    window.location.hash = '#/prototypes/' + p.designer + '/' + p.name
+  private _open(item: GalleryItem) {
+    if (item.kind === 'external' && item.url) {
+      window.open(item.url, '_blank', 'noopener,noreferrer')
+    } else if (item.href) {
+      window.location.hash = item.href
+    }
+  }
+
+  private _openDialog() {
+    this._fUrl = ''
+    this._fTitle = ''
+    this._fDesigner = ''
+    this._fDesc = ''
+    const dialog = this._dialogRef.value
+    dialog
+      ?.querySelectorAll('jh-input, jh-input-url, jh-input-textarea')
+      .forEach(el => { (el as HTMLInputElement).value = '' })
+    dialog?.showModal()
+  }
+
+  private _closeDialog() {
+    this._dialogRef.value?.close()
+  }
+
+  private _createExternal() {
+    let url = this._fUrl.trim()
+    if (!url) return
+    if (!/^https?:\/\//i.test(url)) url = `https://${url}`
+
+    let host = ''
+    try {
+      host = new URL(url).hostname.replace(/^www\./, '')
+    } catch {
+      return
+    }
+
+    const entry: ExternalEntry = {
+      id: `ext-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      title: this._fTitle.trim() || host,
+      url,
+      designer: this._fDesigner.trim() || 'anonymous',
+      description: this._fDesc.trim(),
+      createdAt: todayISO(),
+    }
+
+    this._external = [...this._external, entry]
+    saveExternal(this._external)
+    this._closeDialog()
+  }
+
+  private _removeExternal(id: string, e: Event) {
+    e.stopPropagation()
+    this._external = this._external.filter(x => x.id !== id)
+    saveExternal(this._external)
   }
 
   render() {
@@ -134,16 +345,43 @@ export class ProtoGallery extends LitElement {
 
     return html`
       <div class="toolbar">
-        <span class="count">${this._all.length} prototype${this._all.length !== 1 ? 's' : ''}</span>
         <jh-input-search
           label="Search prototypes"
           placeholder="Search by name, designer, or tag..."
-          style="min-width: 280px"
           @jh-input=${(e: CustomEvent) => { this._search = (e.target as HTMLInputElement).value }}
         ></jh-input-search>
+        <div class="actions">
+          <jh-button
+            appearance="secondary"
+            size="small"
+            label="Link external"
+            @click=${this._openDialog}
+          ></jh-button>
+          <jh-button
+            appearance="primary"
+            size="small"
+            label=${this._copied ? 'Command copied!' : 'New prototype'}
+            @click=${this._copyNewPrototype}
+          ></jh-button>
+        </div>
       </div>
 
+      ${this._copied ? html`
+        <div class="notice">
+          <jh-notification type="alert" appearance="positive">
+            Command copied — paste it into Claude Code or Cursor to start a new prototype.
+          </jh-notification>
+        </div>
+      ` : ''}
+
       <main>
+        ${protos.length > 0 ? html`
+          <p class="count">
+            ${this._search
+              ? `Showing ${protos.length} of ${this._items.length} prototype${this._items.length !== 1 ? 's' : ''}`
+              : `${this._items.length} prototype${this._items.length !== 1 ? 's' : ''}`}
+          </p>
+        ` : ''}
         ${protos.length === 0 && this._search ? html`
           <div class="empty">
             <h2>No results for "${this._search}"</h2>
@@ -151,7 +389,7 @@ export class ProtoGallery extends LitElement {
         ` : protos.length === 0 ? html`
           <div class="empty">
             <h2>No prototypes yet</h2>
-            <p>Run <code>/new-prototype</code> in Claude Code to create your first one.</p>
+            <p>Use <strong>New prototype</strong> to scaffold one in Claude Code or Cursor, or <strong>Link external</strong> to add a link.</p>
           </div>
         ` : groups.map(group => html`
           <jh-list-group label=${group.label}>
@@ -161,13 +399,74 @@ export class ProtoGallery extends LitElement {
                 secondary-text=${p.description}
                 primary-metadata=${p.designer}
                 tabindex="0"
-                @click=${() => this._navigate(p)}
-                @keydown=${(e: KeyboardEvent) => e.key === 'Enter' && this._navigate(p)}
-              ></jh-list-item>
+                @click=${() => this._open(p)}
+                @keydown=${(e: KeyboardEvent) => e.key === 'Enter' && this._open(p)}
+              >
+                ${p.kind === 'external' ? html`
+                  <div class="item-right" slot="jh-list-item-right">
+                    <jh-button
+                      appearance="tertiary"
+                      size="x-small"
+                      label="Remove"
+                      @click=${(e: Event) => this._removeExternal(p.id!, e)}
+                    ></jh-button>
+                    <jh-icon-arrow-up-right-from-square size="small"></jh-icon-arrow-up-right-from-square>
+                  </div>
+                ` : ''}
+              </jh-list-item>
             `)}
           </jh-list-group>
         `)}
       </main>
+
+      <dialog ${ref(this._dialogRef)} @cancel=${this._closeDialog}>
+        <h2 class="dialog-title">Link External Prototype</h2>
+
+        <div class="field">
+          <jh-input-url
+            label="URL"
+            required
+            helper-text="e.g. a Figma prototype or v0 link"
+            @jh-input=${(e: CustomEvent) => { this._fUrl = (e.target as HTMLInputElement).value }}
+            @jh-change=${(e: CustomEvent) => { this._fUrl = (e.target as HTMLInputElement).value }}
+          ></jh-input-url>
+        </div>
+
+        <div class="field">
+          <jh-input
+            label="Title"
+            @jh-input=${(e: CustomEvent) => { this._fTitle = (e.target as HTMLInputElement).value }}
+            @jh-change=${(e: CustomEvent) => { this._fTitle = (e.target as HTMLInputElement).value }}
+          ></jh-input>
+        </div>
+
+        <div class="field">
+          <jh-input
+            label="Your name"
+            @jh-input=${(e: CustomEvent) => { this._fDesigner = (e.target as HTMLInputElement).value }}
+            @jh-change=${(e: CustomEvent) => { this._fDesigner = (e.target as HTMLInputElement).value }}
+          ></jh-input>
+        </div>
+
+        <div class="field">
+          <jh-input-textarea
+            label="Description"
+            rows="3"
+            @jh-input=${(e: CustomEvent) => { this._fDesc = (e.target as HTMLInputElement).value }}
+            @jh-change=${(e: CustomEvent) => { this._fDesc = (e.target as HTMLInputElement).value }}
+          ></jh-input-textarea>
+        </div>
+
+        <div class="dialog-actions">
+          <jh-button appearance="secondary" label="Cancel" @click=${this._closeDialog}></jh-button>
+          <jh-button
+            appearance="primary"
+            label="Create"
+            ?disabled=${!this._fUrl.trim()}
+            @click=${this._createExternal}
+          ></jh-button>
+        </div>
+      </dialog>
     `
   }
 }
