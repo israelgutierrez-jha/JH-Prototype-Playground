@@ -3,6 +3,7 @@ import { customElement, property, state } from 'lit/decorators.js'
 import { createRef, ref } from 'lit/directives/ref.js'
 import '@jack-henry/jh-elements/components/button/button.js'
 import '@jack-henry/jh-elements/components/notification/notification.js'
+import '@jack-henry/jh-icons/icons-wc/icon-crosshairs.js'
 import '@jkhy/platform-tools/components/jh-platform-header.js'
 import type { TemplateMeta } from './proto-card.js'
 
@@ -43,6 +44,7 @@ export class ProtoTemplateShell extends LitElement {
   `
 
   @property() name = ''
+  @property({ type: Boolean }) inspecting = false
 
   @state() private _loading = true
   @state() private _error = ''
@@ -126,6 +128,14 @@ export class ProtoTemplateShell extends LitElement {
     return html`
       <jh-platform-header title=${this._meta?.title ?? this.name} .navItems=${this._meta?.navItems ?? []}>
         <div slot="header-right" class="header-actions">
+          <jh-button
+            appearance=${this.inspecting ? 'primary' : 'secondary'}
+            size="small"
+            accessible-label=${this.inspecting ? 'Turn off inspect mode' : 'Inspect components (hover to identify)'}
+            @click=${() => this.dispatchEvent(new CustomEvent('toggle-inspect', { bubbles: true, composed: true }))}
+          >
+            <jh-icon-crosshairs slot="jh-button-icon-left" size="small"></jh-icon-crosshairs>
+          </jh-button>
           <jh-button
             appearance="secondary"
             size="small"

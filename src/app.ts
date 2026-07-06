@@ -15,7 +15,6 @@ import '@jack-henry/jh-icons/icons-wc/icon-books.js'
 import '@jack-henry/jh-icons/icons-wc/icon-gear.js'
 import '@jack-henry/jh-icons/icons-wc/icon-sun.js'
 import '@jack-henry/jh-icons/icons-wc/icon-moon-stars.js'
-import '@jack-henry/jh-icons/icons-wc/icon-magnifying-glass.js'
 
 @customElement('proto-app')
 export class ProtoApp extends LitElement {
@@ -176,7 +175,7 @@ export class ProtoApp extends LitElement {
 
   render() {
     const hash = this._hash || '#/'
-    const protoMatch = hash.match(/^#\/prototypes\/([^/]+)\/(.+)$/)
+    const protoMatch = hash.match(/^#\/prototypes\/([^/]+)\/([^/]+)/)
     const templateViewMatch = hash.match(/^#\/templates\/(.+)$/)
     const isTemplatesList = hash === '#/templates'
     const isResources = hash === '#/resources'
@@ -204,14 +203,6 @@ export class ProtoApp extends LitElement {
           </div>
           <div class="nav-bottom">
             <button
-              class="nav-btn ${this._inspect ? 'active' : ''}"
-              title=${this._inspect ? 'Turn off inspect mode' : 'Inspect components (hover to identify)'}
-              aria-pressed=${this._inspect ? 'true' : 'false'}
-              @click=${this._toggleInspect}
-            >
-              <jh-icon-magnifying-glass size="small"></jh-icon-magnifying-glass>
-            </button>
-            <button
               class="nav-btn"
               title=${this._dark ? 'Switch to light mode' : 'Switch to dark mode'}
               @click=${this._toggleTheme}
@@ -222,16 +213,19 @@ export class ProtoApp extends LitElement {
             </button>
           </div>
         </div>
-        <div class="content ${this._inspect ? 'inspecting' : ''}">
+        <div
+          class="content ${this._inspect ? 'inspecting' : ''}"
+          @toggle-inspect=${this._toggleInspect}
+        >
           ${protoMatch
-            ? html`<proto-shell .designer=${protoMatch[1]} .name=${protoMatch[2]}></proto-shell>`
+            ? html`<proto-shell .designer=${protoMatch[1]} .name=${protoMatch[2]} .inspecting=${this._inspect}></proto-shell>`
             : isSettings
             ? html`
               <jh-platform-header title="Settings"></jh-platform-header>
               <proto-settings class="gallery-scroll"></proto-settings>
             `
             : templateViewMatch
-            ? html`<proto-template-shell class="gallery-scroll" .name=${templateViewMatch[1]}></proto-template-shell>`
+            ? html`<proto-template-shell class="gallery-scroll" .name=${templateViewMatch[1]} .inspecting=${this._inspect}></proto-template-shell>`
             : html`
               <jh-platform-header title="JH Prototype Playground"></jh-platform-header>
               ${isResources

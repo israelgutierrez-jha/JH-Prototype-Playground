@@ -1,9 +1,13 @@
 import { LitElement, html, css } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
 import { createRef, ref } from 'lit/directives/ref.js'
-import '@jack-henry/jh-elements/components/button/button.js'
 import '@jack-henry/jh-elements/components/notification/notification.js'
+import '@jack-henry/jh-elements/components/button/button.js'
+import '@jack-henry/jh-icons/icons-wc/icon-pencil.js'
+import '@jack-henry/jh-icons/icons-wc/icon-crosshairs.js'
 import '@jkhy/platform-tools/components/jh-platform-header.js'
+import './proto-settings-dialog.js'
+import type { ProtoSettingsSavedDetail } from './proto-settings-dialog.js'
 import type { PrototypeMeta } from './proto-card.js'
 
 @customElement('proto-shell')
@@ -18,10 +22,10 @@ export class ProtoShell extends LitElement {
       --jh-platform-header-horizontal-padding: 28px;
     }
 
-    .header-actions {
+    .header-right {
       display: flex;
       align-items: center;
-      gap: var(--jh-dimension-200, 1rem);
+      gap: var(--jh-dimension-300, 0.75rem);
     }
 
     .designer-badge {
@@ -49,9 +53,13 @@ export class ProtoShell extends LitElement {
 
   @property() designer = ''
   @property() name = ''
+  @property({ type: Boolean }) inspecting = false
 
   @state() private _loading = true
   @state() private _error = ''
+  @state() private _settingsOpen = false
+  @state() private _titleOverride: string | null = null
+  @state() private _descriptionOverride: string | null = null
 
   private _containerRef = createRef<HTMLDivElement>()
   private _protoEl: Element | null = null
@@ -73,7 +81,11 @@ export class ProtoShell extends LitElement {
   }
 
   private get _protoTitle(): string {
-    return this._protoMeta?.title ?? this.name
+    return this._titleOverride ?? this._protoMeta?.title ?? this.name
+  }
+
+  private get _protoDescription(): string {
+    return this._descriptionOverride ?? this._protoMeta?.description ?? ''
   }
 
   private async _loadPrototype(designer: string, name: string) {
@@ -112,6 +124,8 @@ export class ProtoShell extends LitElement {
         this._error = ''
         this._protoEl = null
         this._loadedKey = ''
+        this._titleOverride = null
+        this._descriptionOverride = null
         this._loadPrototype(this.designer, this.name)
       }
     }
@@ -124,17 +138,33 @@ export class ProtoShell extends LitElement {
     }
   }
 
+  private _onSettingsSaved(e: CustomEvent<ProtoSettingsSavedDetail>) {
+    this._titleOverride = e.detail.title
+    this._descriptionOverride = e.detail.description
+    this._settingsOpen = false
+  }
+
   render() {
     return html`
       <jh-platform-header title=${this._protoTitle} .navItems=${this._protoMeta?.navItems ?? []}>
-        <div slot="header-right" class="header-actions">
+        <div slot="header-right" class="header-right">
           <span class="designer-badge">by ${this.designer}</span>
           <jh-button
-            appearance="secondary"
+            appearance="tertiary"
             size="small"
-            label="← Gallery"
-            @click=${() => { window.location.hash = '#/' }}
-          ></jh-button>
+            accessible-label="Prototype settings"
+            @click=${() => { this._settingsOpen = true }}
+          >
+            <jh-icon-pencil slot="jh-button-icon-left" size="small"></jh-icon-pencil>
+          </jh-button>
+          <jh-button
+            appearance=${this.inspecting ? 'primary' : 'secondary'}
+            size="small"
+            accessible-label=${this.inspecting ? 'Turn off inspect mode' : 'Inspect components (hover to identify)'}
+            @click=${() => this.dispatchEvent(new CustomEvent('toggle-inspect', { bubbles: true, composed: true }))}
+          >
+            <jh-icon-crosshairs slot="jh-button-icon-left" size="small"></jh-icon-crosshairs>
+          </jh-button>
         </div>
       </jh-platform-header>
 
@@ -149,6 +179,16 @@ export class ProtoShell extends LitElement {
           <div ${ref(this._containerRef)}></div>
         `}
       </div>
+
+      <proto-settings-dialog
+        .open=${this._settingsOpen}
+        .designer=${this.designer}
+        .name=${this.name}
+        .initialTitle=${this._protoTitle}
+        .initialDescription=${this._protoDescription}
+        @close=${() => { this._settingsOpen = false }}
+        @saved=${this._onSettingsSaved}
+      ></proto-settings-dialog>
     `
   }
 }

@@ -149,7 +149,10 @@ function renderApiModule(apiByTag: Record<string, ComponentApi>): string {
 }
 
 async function loadDocs(): Promise<ComponentDoc[]> {
-  const files = readdirSync(COMPONENTS_DIR).filter(f => /^jh-.*\.ts$/.test(f))
+  // `jha-*` matches legacy `@banno/jha-wc` components (e.g. jha-advanced-table)
+  // that have no Custom Elements Manifest — see the hand-authored-API fallback
+  // in main() below.
+  const files = readdirSync(COMPONENTS_DIR).filter(f => /^jha?-.*\.ts$/.test(f))
   const docs: ComponentDoc[] = []
   for (const file of files) {
     const mod = (await import(pathToFileURL(join(COMPONENTS_DIR, file)).href)) as {
@@ -164,13 +167,29 @@ async function loadDocs(): Promise<ComponentDoc[]> {
 async function main() {
   const intent = await loadDocs()
 
-  // Derive the API for each documented tag from the manifest.
+  // Derive the API for each documented tag from the manifest. Components with
+  // no manifest entry (legacy `@banno/jha-wc` tags) fall back to whatever
+  // props/events/slots the doc hand-authors, instead of being wiped to empty.
   const apiByTag: Record<string, ComponentApi> = {}
   const resolved: ResolvedDoc[] = intent.map(d => {
-    const api = deriveApi(d.tag, d.featuredProps)
-    if (!api) console.warn(`⚠ ${d.tag}: no manifest entry — API will be empty`)
-    apiByTag[d.tag] = api ?? EMPTY_API
-    return { ...d, ...(api ?? EMPTY_API) }
+    const manifestApi = deriveApi(d.tag, d.featuredProps)
+    const handAuthoredApi: ComponentApi = {
+      props: d.props ?? [],
+      events: d.events ?? [],
+      slots: d.slots ?? [],
+    }
+    const hasHandAuthoredApi =
+      handAuthoredApi.props.length > 0 || handAuthoredApi.events.length > 0 || handAuthoredApi.slots.length > 0
+
+    if (!manifestApi && !hasHandAuthoredApi) {
+      console.warn(`⚠ ${d.tag}: no manifest entry — API will be empty`)
+    } else if (!manifestApi) {
+      console.log(`ℹ ${d.tag}: no manifest entry — using hand-authored API (legacy component)`)
+    }
+
+    const api = manifestApi ?? (hasHandAuthoredApi ? handAuthoredApi : EMPTY_API)
+    apiByTag[d.tag] = api
+    return { ...d, ...api }
   })
 
   const body = resolved.length

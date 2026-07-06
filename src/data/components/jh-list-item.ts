@@ -31,7 +31,7 @@ export const doc: ComponentDoc = {
       useCase: 'A row with an avatar/icon on the left and metadata on the right.',
       code: `<jh-list-item>
   <jh-icon-user slot="jh-list-item-left"></jh-icon-user>
-  <div slot="jh-list-item-content">Ivan Gutierrez</div>
+  <div slot="jh-list-item-content">Jack Henry</div>
   <div slot="jh-list-item-metadata">Admin</div>
 </jh-list-item>`,
     },

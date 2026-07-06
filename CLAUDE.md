@@ -24,7 +24,7 @@ Run `/new-prototype` or follow these steps manually:
 
 ### Naming conventions
 
-- `[your-name]` = your first-last in lowercase kebab-case, e.g. `ivan-gutierrez`
+- `[your-name]` = your first-last in lowercase kebab-case, e.g. `jack-henry`
 - `[prototype-name]` = kebab-case description, e.g. `account-transfer-flow`
 
 ---
@@ -39,7 +39,7 @@ import type { PrototypeMeta } from '../../../components/proto-card.js'
 export const meta: PrototypeMeta = {
   title: 'Account Transfer Flow',
   description: 'Three-step flow for transferring funds between accounts.',
-  designer: 'ivan-gutierrez',
+  designer: 'jack-henry',
   tags: ['transfers', 'forms', 'multi-step'],
   createdAt: '2026-06-15',
   // Optional: adds a nav bar to the header for this prototype
@@ -166,6 +166,7 @@ tab. Open the relevant file for exact attributes — do not guess them.
 - `jh-table-data-cell` — A body cell holding one value within a table row. _Import:_ `@jack-henry/jh-elements/components/table-data-cell/table-data-cell.js` — _when:_ Holding a single value in a body `jh-table-row`; content is slotted.
 - `jh-table-header-cell` — A column header cell within a table header row. _Import:_ `@jack-henry/jh-elements/components/table-header-cell/table-header-cell.js` — _when:_ Labeling a column inside a `jh-table-row` with `slot="header"`.
 - `jh-table-row` — A row within a table — a header row or a body row of cells. _Import:_ `@jack-henry/jh-elements/components/table-row/table-row.js` — _when:_ Grouping header cells (`slot="header"`) or data cells into a single table row.
+- `jha-advanced-table` — A full-featured data table with sorting, filtering, search, pagination, bulk actions, and a column editor — the legacy component still used for anything a plain jh-table can't handle. _Import:_ `@banno/jha-wc/src/tables/advanced/jha-advanced-table/jha-advanced-table.js` — _when:_ Displaying a large, information-dense dataset that needs sorting, filtering, search, and pagination out of the box — transaction lists, admin queues, reporting grids.
 
 #### Icons
 

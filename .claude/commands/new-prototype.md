@@ -5,7 +5,7 @@ Scaffold a new prototype in the JH Prototype Playground.
 ## Steps
 
 1. Ask the user for:
-   - Their name (to use as the folder name, e.g. `ivan-gutierrez`)
+   - Their name (to use as the folder name, e.g. `jack-henry`)
    - The prototype name (a short description that will become the folder name, e.g. `account-transfer`)
    - A brief description of what the prototype demonstrates (1–2 sentences)
    - Tags (comma-separated keywords, e.g. `forms, multi-step, accounts`)

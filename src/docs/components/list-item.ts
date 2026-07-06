@@ -140,7 +140,7 @@ export const listItemDoc: ComponentDoc = {
       label: 'With slots',
       code: `<jh-list-item>
   <jh-icon-user slot="jh-list-item-left"></jh-icon-user>
-  <div slot="jh-list-item-content">Ivan Gutierrez</div>
+  <div slot="jh-list-item-content">Jack Henry</div>
   <div slot="jh-list-item-metadata">Admin</div>
   <jh-icon-view-more slot="jh-list-item-right"></jh-icon-view-more>
 </jh-list-item>`,

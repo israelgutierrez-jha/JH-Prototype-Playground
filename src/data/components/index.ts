@@ -3,14 +3,17 @@ import { COMPONENT_API } from './_api.generated.js'
 
 /**
  * Auto-discovers every component doc in this folder. Drop in a new
- * `jh-*.ts` that exports `doc: ComponentDoc` and it appears everywhere —
- * no registration needed (mirrors how prototypes/templates load).
+ * `jh-*.ts` (or `jha-*.ts` for a legacy `@banno/jha-wc` component) that
+ * exports `doc: ComponentDoc` and it appears everywhere — no registration
+ * needed (mirrors how prototypes/templates load).
  *
  * Each hand-authored doc supplies *intent*; its API surface
  * (props/events/slots) is merged in from `_api.generated.ts`, which is derived
- * from the package's Custom Elements Manifest. One shape, two sources of truth.
+ * from the package's Custom Elements Manifest — except for legacy `jha-*` tags
+ * with no manifest entry, where the hand-authored API in the doc itself wins
+ * (see the fallback in `scripts/generate-component-docs.ts`).
  */
-const modules = import.meta.glob('./jh-*.ts', { eager: true }) as Record<
+const modules = import.meta.glob(['./jh-*.ts', './jha-*.ts'], { eager: true }) as Record<
   string,
   { doc?: ComponentDoc }
 >
