@@ -5,4 +5,7 @@ dist/
 .claude/settings.local.json
 .claude/settings.json
 .cursorrules
+.cursor/commands/
+.mcp.json
+.cursor/mcp.json
 idea.md

@@ -1,6 +1,6 @@
 # JH Prototype Playground
 
-This repo is a shared design prototyping environment for the Jack Henry design team. Designers work locally in VS Code with Claude Code to generate interactive prototypes built exclusively with JH components.
+This repo is a shared design prototyping environment for the Jack Henry design team. Designers work locally with either Claude Code or Cursor to generate interactive prototypes built exclusively with JH components — the playground is AI-agnostic, bring whichever tool you already use.
 
 ## Your role
 
@@ -26,6 +26,14 @@ Run `/new-prototype` or follow these steps manually:
 
 - `[your-name]` = your first-last in lowercase kebab-case, e.g. `jack-henry`
 - `[prototype-name]` = kebab-case description, e.g. `account-transfer-flow`
+
+---
+
+## Building from a Figma design
+
+Run `/figma-to-prototype` to scaffold a prototype from an actual Figma frame instead of a text description. It fetches the design via the `figma` MCP server (pre-configured in `.mcp.json` / `.cursor/mcp.json` — see the repo README for the one-time authorization step), maps every element to the closest `jh-*` component and `--jh-*` token, and produces the same `meta.ts`/`index.ts` shape as `/new-prototype`. Same hard rule applies: if something in the design has no JH equivalent, it stops and asks before writing custom markup.
+
+Jack Henry's Figma library doesn't yet have formal Code Connect mappings to `jh-elements` (that's on the design-system team's backlog), so matching today is heuristic. If/when those mappings ship, this command gets more accurate automatically — no changes needed here.
 
 ---
 
@@ -411,6 +419,10 @@ npm run dev   # → http://localhost:5173
 ```
 
 Your prototype appears in the gallery automatically once you create the `meta.ts` and `index.ts` files.
+
+### Keeping Claude Code and Cursor in sync
+
+`.claude/commands/*.md` and `scripts/mcp-servers.js` are the only files to hand-edit for slash commands and MCP servers. `npm install` (via `postinstall`) and `npm run docs` both run `scripts/sync-rules.js`, which regenerates `.cursorrules`, `.cursor/commands/*.md`, `.mcp.json`, and `.cursor/mcp.json` from those sources. Don't hand-edit the generated files — they're gitignored and get overwritten on the next install.
 
 ---
 

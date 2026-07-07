@@ -1,6 +1,6 @@
 # JH Prototype Playground
 
-A shared environment for the Jack Henry design team to rapidly prototype interactive UIs using the [JH Design System](https://jackhenry.design/) with Claude Code as the AI pair.
+A shared environment for the Jack Henry design team to rapidly prototype interactive UIs using the [JH Design System](https://jackhenry.design/), with Claude Code or Cursor as the AI pair.
 
 ## Philosophy
 
@@ -14,6 +14,8 @@ You need **Node.js** (which includes npm) installed before running anything belo
 - If not, install it from [nodejs.org](https://nodejs.org/) — pick the **LTS** version
 
 No Artifactory token or JH internal network access required — all JH packages are bundled in the repo.
+
+**Bring your own AI and your own Figma.** This playground is AI-agnostic — use Claude Code or Cursor, whichever you already have. It doesn't bundle either tool or any credentials: you need your own Claude Code / Cursor install and, if you want to build prototypes from Figma designs (see [Building from a Figma design](#building-from-a-figma-design)), your own Figma account with access to the files you're prototyping from. The repo only ships shared *configuration* (which MCP server to connect to, which commands are available) — not licenses or logins.
 
 ## Quick start
 
@@ -30,9 +32,17 @@ npm run dev
 # → http://localhost:5173
 ```
 
+## Connect Figma (one-time)
+
+This repo ships with Figma's MCP server pre-configured (`.mcp.json` for Claude Code, `.cursor/mcp.json` for Cursor) — there's nothing to install, just a one-time authorization:
+
+1. Open this repo in Claude Code or Cursor.
+2. The first time you use a Figma-powered command (see [Building from a Figma design](#building-from-a-figma-design)), your editor will prompt you to authorize access — in Claude Code, run `/mcp` and choose "Authenticate"; in Cursor, open Settings → MCP and authorize the `figma` server.
+3. Approve it once in the browser tab that opens. That's it — this persists per machine.
+
 ## Creating a prototype
 
-With Claude Code open in VS Code, type:
+With Claude Code or Cursor open, type:
 
 ```
 /new-prototype
@@ -50,11 +60,22 @@ src/prototypes/[your-name]/[prototype-name]/
 
 See [CLAUDE.md](./CLAUDE.md) for the full component reference and patterns.
 
+## Building from a Figma design
+
+Already have the design in Figma? Skip the text description and rebuild it directly, using only real JH components:
+
+```
+/figma-to-prototype
+```
+
+You'll be asked for a Figma frame URL (must include a `node-id`) plus a name and tags. Claude fetches the design, maps every element to the closest `jh-*` component and `--jh-*` token, and scaffolds the same `meta.ts`/`index.ts` pair `/new-prototype` produces — asking you first if something in the design has no JH equivalent, rather than inventing custom markup. Requires the one-time Figma connection above.
+
 ## Getting help from Claude
 
 | Slash command | What it does |
 |---------------|-------------|
 | `/new-prototype` | Scaffolds a new prototype with JH components based on your description |
+| `/figma-to-prototype` | Scaffolds a new prototype by rebuilding a Figma design with JH components |
 | `/use-jh-component` | Finds the right JH component for a UI pattern and shows usage |
 
 ## Rules

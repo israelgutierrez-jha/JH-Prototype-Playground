@@ -25,8 +25,8 @@
   },
   {
     "id": "fr-4",
-    "title": "One-click prototype duplication",
-    "description": "Fork an existing prototype into a new folder to iterate on a variant quickly.",
+    "title": "One-click prototype duplication/versioning",
+    "description": "Fork an existing prototype into a new folder to iterate on a variant quickly. Possibly show the relationship between the original and the variant/duplicate.",
     "submittedBy": "anonymous",
     "assignedTo": "",
     "votes": 0,
