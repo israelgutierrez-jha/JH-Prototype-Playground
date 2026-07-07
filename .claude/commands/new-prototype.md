@@ -4,11 +4,11 @@ Scaffold a new prototype in the JH Prototype Playground.
 
 ## Steps
 
-1. Ask the user for:
-   - Their name (to use as the folder name, e.g. `jack-henry`)
-   - The prototype name (a short description that will become the folder name, e.g. `account-transfer`)
-   - A brief description of what the prototype demonstrates (1–2 sentences)
-   - Tags (comma-separated keywords, e.g. `forms, multi-step, accounts`)
+1. **Collect the details one field at a time, in this order: designer name → prototype name → description → tags.** Don't dump all four into one message — give each its own turn, and pick the presentation that fits the field:
+   - **Designer name.** List the folders under `src/prototypes/*/` first. If any exist, ask with the `AskUserQuestion` tool: offer the existing designer folder names as options (recommend whichever seems like a returning designer) so they reuse their folder, plus the built-in "Other" for a new name. If there are no prototypes yet, or `AskUserQuestion` isn't available in the current tool (e.g. Cursor), just ask directly: "What's your name? (used as the folder name, e.g. `jack-henry`)"
+   - **Prototype name.** Ask directly as free text, e.g. "What should this prototype be called? (a short description that becomes the folder name, e.g. `account-transfer`)". No meaningful fixed option set — don't force it into a picker.
+   - **Description.** Ask directly as free text: "What does this prototype demonstrate? (1–2 sentences)" — this drives what gets generated in `index.ts`, so get it before tags.
+   - **Tags.** Scan existing `meta.ts` files across `src/prototypes/` for tags already in use. Ask with `AskUserQuestion`, `multiSelect: true`, offering the most common existing tags as options (plus any that plausibly fit the description just given) and "Other" for anything new. If `AskUserQuestion` isn't available, ask for comma-separated tags directly.
 
 2. Convert inputs to kebab-case:
    - designer folder: `[firstname-lastname]` lowercase
