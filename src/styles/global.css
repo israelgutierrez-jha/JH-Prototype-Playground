@@ -11,12 +11,19 @@
   --jh-color-global-navigation-hover: rgb(10, 32, 79);
   /* Nav icon fill — production uses #a9b0b6 in dark, white in light */
   --proto-nav-icon-fill: var(--jh-color-content-on-primary-active);
+  /* jh-tokens has no semantic "warning"/yellow container pair (content- or
+     container-warning-* don't exist in this token version), so the Features
+     Kanban board's "In Progress" accent assembles one by hand from the raw
+     yellow scale, mirroring how the real semantic pairs go pale in light
+     mode and muted-dark in dark mode. */
+  --proto-kanban-in-progress-bg: var(--jh-color-yellow-100);
 }
 
 .jh-theme-dark {
   --jh-color-global-navigation-enabled: var(--jh-color-black-alpha-100);
   --jh-color-global-navigation-hover: var(--jh-color-gray-950);
   --proto-nav-icon-fill: #a9b0b6;
+  --proto-kanban-in-progress-bg: var(--jh-color-yellow-800);
 }
 
 

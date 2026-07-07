@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import { createRef, ref } from 'lit/directives/ref.js'
 import type { PrototypeMeta } from './proto-card.js'
+import { EXTERNAL_LINKS, type ExternalPrototypeLink as ExternalEntry } from '../data/external-links.js'
 import '@jack-henry/jh-elements/components/input-search/input-search.js'
 import '@jack-henry/jh-elements/components/list-group/list-group.js'
 import '@jack-henry/jh-elements/components/list-item/list-item.js'
@@ -16,31 +17,35 @@ const NEW_PROTOTYPE_PROMPT =
   'I want to create a new prototype in the JH Prototype Playground. ' +
   'Please run /new-prototype to scaffold it, then help me build it using only JH components.'
 
-const STORAGE_KEY = 'jh-external-prototypes'
-
-interface ExternalEntry {
-  id: string
+/**
+ * External links persist through the dev-only `/__proto-api/external-links`
+ * endpoint (see vite.config.ts), which reads/writes the real
+ * `src/data/external-links.json` — same pattern as prototype settings.
+ */
+async function addExternalLink(fields: {
   title: string
   url: string
   designer: string
   description: string
-  createdAt: string
+}): Promise<ExternalEntry> {
+  const res = await fetch('/__proto-api/external-links', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(fields),
+  })
+  const result = await res.json()
+  if (!res.ok || !result.ok) throw new Error(result.error || 'Failed to save the link.')
+  return result.entry
 }
 
-/** External links are stored per-browser in localStorage (no backend yet). */
-function loadExternal(): ExternalEntry[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return []
-    const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? (parsed as ExternalEntry[]) : []
-  } catch {
-    return []
-  }
-}
-
-function saveExternal(entries: ExternalEntry[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries))
+async function removeExternalLink(id: string): Promise<void> {
+  const res = await fetch('/__proto-api/external-links', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id }),
+  })
+  const result = await res.json()
+  if (!res.ok || !result.ok) throw new Error(result.error || 'Failed to remove the link.')
 }
 
 interface PrototypeEntry extends PrototypeMeta {
@@ -110,10 +115,6 @@ function groupByMonth(entries: GalleryItem[]): MonthGroup[] {
     key,
     entries,
   }))
-}
-
-function todayISO(): string {
-  return new Date().toISOString().slice(0, 10)
 }
 
 @customElement('proto-gallery')
@@ -228,11 +229,14 @@ export class ProtoGallery extends LitElement {
 
   @state() private _search = ''
   @state() private _copied = false
-  @state() private _external: ExternalEntry[] = loadExternal()
+  @state() private _external: ExternalEntry[] = EXTERNAL_LINKS
   @state() private _fUrl = ''
   @state() private _fTitle = ''
   @state() private _fDesigner = ''
   @state() private _fDesc = ''
+  @state() private _savingLink = false
+  @state() private _linkError = ''
+  @state() private _removeError = ''
 
   private _all = loadPrototypes()
   private _dialogRef = createRef<HTMLDialogElement>()
@@ -296,6 +300,8 @@ export class ProtoGallery extends LitElement {
     this._fTitle = ''
     this._fDesigner = ''
     this._fDesc = ''
+    this._linkError = ''
+    this._savingLink = false
     const dialog = this._dialogRef.value
     dialog
       ?.querySelectorAll('jh-input, jh-input-url, jh-input-textarea')
@@ -307,36 +313,46 @@ export class ProtoGallery extends LitElement {
     this._dialogRef.value?.close()
   }
 
-  private _createExternal() {
+  private async _createExternal() {
     let url = this._fUrl.trim()
     if (!url) return
     if (!/^https?:\/\//i.test(url)) url = `https://${url}`
-
-    let host = ''
     try {
-      host = new URL(url).hostname.replace(/^www\./, '')
+      new URL(url)
     } catch {
+      this._linkError = 'Enter a valid URL.'
       return
     }
 
-    const entry: ExternalEntry = {
-      id: `ext-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      title: this._fTitle.trim() || host,
-      url,
-      designer: this._fDesigner.trim() || 'anonymous',
-      description: this._fDesc.trim(),
-      createdAt: todayISO(),
+    this._savingLink = true
+    this._linkError = ''
+    try {
+      const entry = await addExternalLink({
+        url,
+        title: this._fTitle.trim(),
+        designer: this._fDesigner.trim(),
+        description: this._fDesc.trim(),
+      })
+      this._external = [...this._external, entry]
+      this._closeDialog()
+    } catch (err) {
+      this._linkError = err instanceof Error ? err.message : 'Failed to save the link.'
+    } finally {
+      this._savingLink = false
     }
-
-    this._external = [...this._external, entry]
-    saveExternal(this._external)
-    this._closeDialog()
   }
 
-  private _removeExternal(id: string, e: Event) {
+  private async _removeExternal(id: string, e: Event) {
     e.stopPropagation()
+    this._removeError = ''
+    const previous = this._external
     this._external = this._external.filter(x => x.id !== id)
-    saveExternal(this._external)
+    try {
+      await removeExternalLink(id)
+    } catch (err) {
+      this._external = previous
+      this._removeError = err instanceof Error ? err.message : 'Failed to remove the link.'
+    }
   }
 
   render() {
@@ -371,6 +387,12 @@ export class ProtoGallery extends LitElement {
           <jh-notification type="alert" appearance="positive">
             Command copied — paste it into Claude Code or Cursor to start a new prototype.
           </jh-notification>
+        </div>
+      ` : ''}
+
+      ${this._removeError ? html`
+        <div class="notice">
+          <jh-notification type="alert" appearance="negative">${this._removeError}</jh-notification>
         </div>
       ` : ''}
 
@@ -422,6 +444,12 @@ export class ProtoGallery extends LitElement {
       <dialog ${ref(this._dialogRef)} @cancel=${this._closeDialog}>
         <h2 class="dialog-title">Link External Prototype</h2>
 
+        ${this._linkError ? html`
+          <div class="field">
+            <jh-notification type="alert" appearance="negative">${this._linkError}</jh-notification>
+          </div>
+        ` : ''}
+
         <div class="field">
           <jh-input-url
             label="URL"
@@ -458,11 +486,12 @@ export class ProtoGallery extends LitElement {
         </div>
 
         <div class="dialog-actions">
-          <jh-button appearance="secondary" label="Cancel" @click=${this._closeDialog}></jh-button>
+          <jh-button appearance="secondary" label="Cancel" ?disabled=${this._savingLink} @click=${this._closeDialog}></jh-button>
           <jh-button
             appearance="primary"
             label="Create"
             ?disabled=${!this._fUrl.trim()}
+            ?pending=${this._savingLink}
             @click=${this._createExternal}
           ></jh-button>
         </div>

@@ -1,0 +1,110 @@
+[
+  {
+    "id": "fr-1",
+    "title": "Comments on prototypes",
+    "description": "Let designers leave inline feedback on a prototype without switching to Slack.",
+    "submittedBy": "william-foss",
+    "assignedTo": "",
+    "votes": 0,
+    "tags": [
+      "collaboration"
+    ],
+    "column": "requested"
+  },
+  {
+    "id": "fr-2",
+    "title": "Mobile viewport preview toggle",
+    "description": "Preview a prototype at phone/tablet widths without resizing the browser window.",
+    "submittedBy": "israel-gutierrez",
+    "assignedTo": "",
+    "votes": 0,
+    "tags": [
+      "preview"
+    ],
+    "column": "requested"
+  },
+  {
+    "id": "fr-4",
+    "title": "One-click prototype duplication",
+    "description": "Fork an existing prototype into a new folder to iterate on a variant quickly.",
+    "submittedBy": "anonymous",
+    "assignedTo": "",
+    "votes": 0,
+    "tags": [
+      "workflow"
+    ],
+    "column": "requested"
+  },
+  {
+    "id": "fr-5",
+    "title": "Search across component gotchas & examples",
+    "description": "Full-text search over every component doc, not just title/tag matches.",
+    "submittedBy": "israel-gutierrez",
+    "assignedTo": "",
+    "votes": 0,
+    "tags": [
+      "docs"
+    ],
+    "column": "requested"
+  },
+  {
+    "id": "fr-7",
+    "title": "Export a prototype as static HTML",
+    "description": "Bundle a single prototype for sharing outside the playground, no dev server required.",
+    "submittedBy": "anonymous",
+    "assignedTo": "",
+    "votes": 0,
+    "tags": [
+      "export"
+    ],
+    "column": "requested"
+  },
+  {
+    "id": "fr-9",
+    "title": "Inspect mode to identify JH components",
+    "description": "Hover any element in a prototype to see which JH component renders it.",
+    "submittedBy": "israel-gutierrez",
+    "assignedTo": "William Foss",
+    "votes": 0,
+    "tags": [
+      "dev tools"
+    ],
+    "column": "shipped"
+  },
+  {
+    "id": "fr-10",
+    "title": "Editable prototype title & description",
+    "description": "Update a prototype's metadata from its own page instead of hand-editing meta.ts.",
+    "submittedBy": "israel-gutierrez",
+    "assignedTo": "Israel Gutierrez",
+    "votes": 0,
+    "tags": [
+      "metadata"
+    ],
+    "column": "shipped"
+  },
+  {
+    "id": "fr-11",
+    "title": "Persisted external prototype links",
+    "description": "Links to prototypes built outside the repo (Figma, v0) now survive a browser reset.",
+    "submittedBy": "israel-gutierrez",
+    "assignedTo": "Israel Gutierrez",
+    "votes": 0,
+    "tags": [
+      "gallery"
+    ],
+    "column": "shipped"
+  },
+  {
+    "id": "fr-12",
+    "title": "Documented jha-advanced-table",
+    "description": "The legacy advanced table finally has real intent docs, props, events, and slots.",
+    "submittedBy": "israel-gutierrez",
+    "assignedTo": "Israel Gutierrez",
+    "votes": 0,
+    "tags": [
+      "docs"
+    ],
+    "column": "shipped"
+  }
+]

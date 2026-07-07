@@ -7,6 +7,7 @@ import './components/proto-templates.js'
 import './components/proto-template-shell.js'
 import './components/proto-shell.js'
 import './components/proto-inspector.js'
+import './components/proto-features.js'
 import '@jkhy/platform-tools/components/jh-platform-nav.js'
 import '@jkhy/platform-tools/components/jh-platform-header.js'
 import '@jack-henry/jh-icons/icons-wc/icon-house.js'
@@ -15,6 +16,7 @@ import '@jack-henry/jh-icons/icons-wc/icon-books.js'
 import '@jack-henry/jh-icons/icons-wc/icon-gear.js'
 import '@jack-henry/jh-icons/icons-wc/icon-sun.js'
 import '@jack-henry/jh-icons/icons-wc/icon-moon-stars.js'
+import '@jack-henry/jh-icons/icons-wc/icon-list-ul-pen.js'
 
 @customElement('proto-app')
 export class ProtoApp extends LitElement {
@@ -133,7 +135,8 @@ export class ProtoApp extends LitElement {
     proto-resources.gallery-scroll,
     proto-settings.gallery-scroll,
     proto-templates.gallery-scroll,
-    proto-template-shell.gallery-scroll {
+    proto-template-shell.gallery-scroll,
+    proto-features.gallery-scroll {
       flex: 1;
       overflow: auto;
     }
@@ -180,8 +183,9 @@ export class ProtoApp extends LitElement {
     const isTemplatesList = hash === '#/templates'
     const isResources = hash === '#/resources'
     const isSettings = hash === '#/settings'
+    const isFeatures = hash === '#/features'
     const isTemplates = isTemplatesList || !!templateViewMatch
-    const isHome = !isTemplates && !isResources && !isSettings
+    const isHome = !isTemplates && !isResources && !isSettings && !isFeatures
 
     return html`
       <div class="shell">
@@ -202,6 +206,9 @@ export class ProtoApp extends LitElement {
             </a>
           </div>
           <div class="nav-bottom">
+            <a class="nav-btn ${isFeatures ? 'active' : ''}" href="#/features" title="Features">
+              <jh-icon-list-ul-pen size="small"></jh-icon-list-ul-pen>
+            </a>
             <button
               class="nav-btn"
               title=${this._dark ? 'Switch to light mode' : 'Switch to dark mode'}
@@ -223,6 +230,11 @@ export class ProtoApp extends LitElement {
             ? html`
               <jh-platform-header title="Settings"></jh-platform-header>
               <proto-settings class="gallery-scroll"></proto-settings>
+            `
+            : isFeatures
+            ? html`
+              <jh-platform-header title="Features"></jh-platform-header>
+              <proto-features class="gallery-scroll"></proto-features>
             `
             : templateViewMatch
             ? html`<proto-template-shell class="gallery-scroll" .name=${templateViewMatch[1]} .inspecting=${this._inspect}></proto-template-shell>`
