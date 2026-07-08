@@ -8,12 +8,13 @@ import './components/proto-template-shell.js'
 import './components/proto-shell.js'
 import './components/proto-inspector.js'
 import './components/proto-features.js'
+import './components/proto-features-vision.js'
 import './components/proto-onboarding-dialog.js'
 import '@jkhy/platform-tools/components/jh-platform-nav.js'
 import '@jkhy/platform-tools/components/jh-platform-header.js'
 import '@jack-henry/jh-elements/components/notification/notification.js'
 import '@jack-henry/jh-elements/components/button/button.js'
-import '@jack-henry/jh-icons/icons-wc/icon-house.js'
+import '@jack-henry/jh-icons/icons-wc/icon-browser.js'
 import '@jack-henry/jh-icons/icons-wc/icon-table-layout.js'
 import '@jack-henry/jh-icons/icons-wc/icon-books.js'
 import '@jack-henry/jh-icons/icons-wc/icon-gear.js'
@@ -113,12 +114,7 @@ export class ProtoApp extends LitElement {
     }
 
     .nav-btn:hover {
-      background: rgba(255, 255, 255, 0.1);
-      --jh-icon-color-fill: rgba(255, 255, 255, 1);
-    }
-
-    .nav-btn.active {
-      background: var(--jh-color-content-brand-enabled, rgba(255, 255, 255, 0.2));
+      background: var(--jh-color-global-navigation-hover, rgba(255, 255, 255, 0.1));
       --jh-icon-color-fill: rgba(255, 255, 255, 1);
     }
 
@@ -144,7 +140,8 @@ export class ProtoApp extends LitElement {
     proto-settings.gallery-scroll,
     proto-templates.gallery-scroll,
     proto-template-shell.gallery-scroll,
-    proto-features.gallery-scroll {
+    proto-features.gallery-scroll,
+    proto-features-vision.gallery-scroll {
       flex: 1;
       overflow: auto;
     }
@@ -224,7 +221,8 @@ export class ProtoApp extends LitElement {
     const isResources = hash === '#/resources' || hash.startsWith('#/resources/')
     const resourcesPage = hash.startsWith('#/resources/components') ? 'components' : 'links'
     const isSettings = hash === '#/settings'
-    const isFeatures = hash === '#/features'
+    const isFeatures = hash === '#/features' || hash === '#/features/vision'
+    const isFeaturesVision = hash === '#/features/vision'
     const isTemplates = isTemplatesList || !!templateViewMatch
     const isHome = !isTemplates && !isResources && !isSettings && !isFeatures
 
@@ -233,13 +231,18 @@ export class ProtoApp extends LitElement {
       { label: 'Component library', path: '#/resources/components' },
     ]
 
+    const featuresNavItems = [
+      { label: 'Board', path: '#/features' },
+      { label: 'Why this exists', path: '#/features/vision' },
+    ]
+
     return html`
       <div class="shell">
         <div class="nav-col">
           <jh-platform-nav .productsLoading=${true}></jh-platform-nav>
           <div class="nav-links">
             <a class="nav-link ${isHome ? 'active' : ''}" href="#/" title="Prototypes">
-              <jh-icon-house size="small"></jh-icon-house>
+              <jh-icon-browser size="small"></jh-icon-browser>
             </a>
             <a class="nav-link ${isTemplates ? 'active' : ''}" href="#/templates" title="Templates">
               <jh-icon-table-layout size="small"></jh-icon-table-layout>
@@ -252,7 +255,7 @@ export class ProtoApp extends LitElement {
             </a>
           </div>
           <div class="nav-bottom">
-            <a class="nav-btn ${isFeatures ? 'active' : ''}" href="#/features" title="Features">
+            <a class="nav-link ${isFeatures ? 'active' : ''}" href="#/features" title="Features">
               <jh-icon-list-ul-pen size="small"></jh-icon-list-ul-pen>
             </a>
             <button
@@ -301,8 +304,11 @@ export class ProtoApp extends LitElement {
             `
             : isFeatures
             ? html`
-              <jh-platform-header title="Features"></jh-platform-header>
-              <proto-features class="gallery-scroll"></proto-features>
+              <jh-platform-header title="Features" .navItems=${featuresNavItems}></jh-platform-header>
+              ${isFeaturesVision
+                ? html`<proto-features-vision class="gallery-scroll"></proto-features-vision>`
+                : html`<proto-features class="gallery-scroll"></proto-features>`
+              }
             `
             : templateViewMatch
             ? html`<proto-template-shell class="gallery-scroll" .name=${templateViewMatch[1]} .inspecting=${this._inspect}></proto-template-shell>`

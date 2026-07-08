@@ -43,7 +43,7 @@ export const pageHeaderStyles = css`
 
   .page-title {
     margin: 0 0 var(--jh-dimension-200, 1rem);
-    font-size: var(--jh-font-size-400, 1.25rem);
+    font-size: var(--jh-font-size-500, 1.25rem);
     font-weight: var(--jh-font-weight-semibold, 600);
     color: var(--jh-color-content-primary-enabled);
   }

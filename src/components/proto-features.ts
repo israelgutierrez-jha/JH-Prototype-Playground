@@ -16,6 +16,7 @@ import '@jack-henry/jh-icons/icons-wc/icon-chevron-right-small.js'
 import { designerProfileReady, formatDesignerName, getDesignerName } from '../utils/designer-profile.js'
 import '@jack-henry/jh-icons/icons-wc/icon-ellipsis.js'
 import { FEATURE_COLUMNS, FEATURE_CARDS, type FeatureCard, type FeatureColumnId } from '../data/features.js'
+import { pageHeaderStyles } from '../styles/page-header.js'
 
 // Grey → blue → yellow → green: unreviewed → scheduled → active → done.
 // Each resolves through a theme-aware token (or the hand-assembled
@@ -150,43 +151,15 @@ function saveVotedIds(ids: Set<string>) {
 
 @customElement('proto-features')
 export class ProtoFeatures extends LitElement {
-  static styles = css`
+  static styles = [
+    pageHeaderStyles,
+    css`
     :host {
       display: block;
     }
 
-    .container {
-      padding: var(--jh-dimension-600, 3rem);
-    }
-
-    .toolbar {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: var(--jh-dimension-400, 1rem);
-      margin-bottom: var(--jh-dimension-500, 2rem);
-    }
-
-    .header {
-      max-width: 70ch;
-    }
-
-    h1 {
-      font-size: var(--jh-font-size-600, 1.5rem);
-      font-weight: var(--jh-font-weight-semibold, 600);
-      color: var(--jh-color-content-primary-enabled);
-      margin: 0 0 var(--jh-dimension-100, 0.5rem);
-    }
-
-    .subtitle {
-      font-size: var(--jh-font-size-400, 1rem);
-      color: var(--jh-color-content-secondary-enabled);
-      line-height: 1.5;
-      margin: 0;
-    }
-
-    .toolbar jh-button {
-      flex-shrink: 0;
+    .page-body {
+      padding: var(--jh-dimension-500, 2.5rem) var(--jh-dimension-600, 3rem) var(--jh-dimension-600, 3rem);
     }
 
     .notice {
@@ -356,7 +329,8 @@ export class ProtoFeatures extends LitElement {
       gap: var(--jh-dimension-200, 1rem);
       margin-top: var(--jh-dimension-500, 2.5rem);
     }
-  `
+  `,
+  ]
 
   @state() private _cards: FeatureCard[] = FEATURE_CARDS
   @state() private _pageError = ''
@@ -560,18 +534,19 @@ export class ProtoFeatures extends LitElement {
 
   render() {
     return html`
-      <div class="container">
-        <div class="toolbar">
-          <div class="header">
-            <h1>Features</h1>
-            <p class="subtitle">
-              Track feature requests and feedback from the design team. Submit an idea, and move cards across
-              the board as they get picked up.
-            </p>
-          </div>
+      <div class="page-header">
+        <div class="page-header-text">
+          <h1 class="page-title">Features</h1>
+          <p class="page-subtitle">
+            Track feature requests and feedback from the design team. Submit an idea, and move cards across
+            the board as they get picked up.
+          </p>
+        </div>
+        <div class="page-header-actions">
           <jh-button appearance="primary" label="Submit feedback" @click=${this._openCreateDialog}></jh-button>
         </div>
-
+      </div>
+      <div class="page-body">
         ${this._pageError ? html`
           <jh-notification class="notice" type="alert" appearance="negative">${this._pageError}</jh-notification>
         ` : ''}
