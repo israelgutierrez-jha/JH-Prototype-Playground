@@ -4,7 +4,8 @@
   "description": "JH design team prototype playground — build interactive prototypes with JH components + Claude Code",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "node scripts/dev-update.js && vite",
+    "dev:raw": "vite",
     "build": "tsc -noEmit && vite build",
     "preview": "vite preview",
     "generate-docs": "tsx scripts/generate-component-docs.ts",

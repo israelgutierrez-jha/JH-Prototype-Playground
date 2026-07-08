@@ -13,6 +13,8 @@ import '@jack-henry/jh-elements/components/input/input.js'
 import '@jack-henry/jh-elements/components/input-url/input-url.js'
 import '@jack-henry/jh-elements/components/input-textarea/input-textarea.js'
 import '@jack-henry/jh-icons/icons-wc/icon-arrow-up-right-from-square.js'
+import { runAiPrompt } from '../utils/ai-deeplink.js'
+import { designerProfileReady, getDesignerName } from '../utils/designer-profile.js'
 
 const NEW_PROTOTYPE_PROMPT =
   'I want to create a new prototype in the JH Prototype Playground. ' +
@@ -215,6 +217,7 @@ export class ProtoGallery extends LitElement {
 
   @state() private _search = ''
   @state() private _copied = false
+  @state() private _actionOutcome: 'opened' | 'copied' = 'copied'
   @state() private _external: ExternalEntry[] = EXTERNAL_LINKS
   @state() private _fUrl = ''
   @state() private _fTitle = ''
@@ -229,7 +232,7 @@ export class ProtoGallery extends LitElement {
 
   private async _copyNewPrototype() {
     try {
-      await navigator.clipboard.writeText(NEW_PROTOTYPE_PROMPT)
+      this._actionOutcome = await runAiPrompt(NEW_PROTOTYPE_PROMPT)
       this._copied = true
       setTimeout(() => { this._copied = false }, 4000)
     } catch {
@@ -281,16 +284,17 @@ export class ProtoGallery extends LitElement {
     }
   }
 
-  private _openDialog() {
+  private async _openDialog() {
+    await designerProfileReady
     this._fUrl = ''
     this._fTitle = ''
-    this._fDesigner = ''
+    this._fDesigner = getDesignerName() ?? ''
     this._fDesc = ''
     this._linkError = ''
     this._savingLink = false
     const dialog = this._dialogRef.value
     dialog
-      ?.querySelectorAll('jh-input, jh-input-url, jh-input-textarea')
+      ?.querySelectorAll('jh-input:not(.designer-field-input), jh-input-url, jh-input-textarea')
       .forEach(el => { (el as HTMLInputElement).value = '' })
     dialog?.showModal()
   }
@@ -370,7 +374,9 @@ export class ProtoGallery extends LitElement {
           <jh-button
             appearance="primary"
             size="small"
-            label=${this._copied ? 'Command copied!' : 'New prototype'}
+            label=${this._copied
+              ? (this._actionOutcome === 'opened' ? 'Opened!' : 'Command copied!')
+              : 'New prototype'}
             @click=${this._copyNewPrototype}
           ></jh-button>
         </div>
@@ -379,7 +385,9 @@ export class ProtoGallery extends LitElement {
       ${this._copied ? html`
         <div class="notice">
           <jh-notification type="alert" appearance="positive">
-            Command copied — paste it into Claude Code or Cursor to start a new prototype.
+            ${this._actionOutcome === 'opened'
+              ? 'Opened your AI tool with the command ready — press Enter to run it. (Also copied to your clipboard as a backup.)'
+              : 'Command copied — paste it into Claude Code or Cursor to start a new prototype.'}
           </jh-notification>
         </div>
       ` : ''}
@@ -464,7 +472,9 @@ export class ProtoGallery extends LitElement {
 
         <div class="field">
           <jh-input
+            class="designer-field-input"
             label="Your name"
+            .value=${this._fDesigner}
             @jh-input=${(e: CustomEvent) => { this._fDesigner = (e.target as HTMLInputElement).value }}
             @jh-change=${(e: CustomEvent) => { this._fDesigner = (e.target as HTMLInputElement).value }}
           ></jh-input>

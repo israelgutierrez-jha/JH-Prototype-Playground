@@ -8,8 +8,11 @@ import './components/proto-template-shell.js'
 import './components/proto-shell.js'
 import './components/proto-inspector.js'
 import './components/proto-features.js'
+import './components/proto-onboarding-dialog.js'
 import '@jkhy/platform-tools/components/jh-platform-nav.js'
 import '@jkhy/platform-tools/components/jh-platform-header.js'
+import '@jack-henry/jh-elements/components/notification/notification.js'
+import '@jack-henry/jh-elements/components/button/button.js'
 import '@jack-henry/jh-icons/icons-wc/icon-house.js'
 import '@jack-henry/jh-icons/icons-wc/icon-table-layout.js'
 import '@jack-henry/jh-icons/icons-wc/icon-books.js'
@@ -17,6 +20,11 @@ import '@jack-henry/jh-icons/icons-wc/icon-gear.js'
 import '@jack-henry/jh-icons/icons-wc/icon-sun.js'
 import '@jack-henry/jh-icons/icons-wc/icon-moon-stars.js'
 import '@jack-henry/jh-icons/icons-wc/icon-list-ul-pen.js'
+import { aiActionLabel, getAiTool, runAiPrompt } from './utils/ai-deeplink.js'
+import { designerProfileReady, isOnboarded } from './utils/designer-profile.js'
+
+const UPDATE_PROMPT =
+  "Please restart the JH Prototype Playground dev server to pick up the latest design system update — stop any running `npm run dev` process and run it again."
 
 @customElement('proto-app')
 export class ProtoApp extends LitElement {
@@ -144,6 +152,25 @@ export class ProtoApp extends LitElement {
 
   @state() private _dark = true
   @state() private _inspect = false
+  @state() private _updateAvailable = false
+  @state() private _showOnboarding = false
+
+  private _updateCheckInterval?: ReturnType<typeof setInterval>
+  private _updateCheckTimeout?: ReturnType<typeof setTimeout>
+
+  private async _checkForUpdate() {
+    try {
+      const res = await fetch('/__proto-api/update-status')
+      const data = await res.json()
+      this._updateAvailable = !!data.updateAvailable
+    } catch {
+      // Endpoint only exists in dev; ignore failures.
+    }
+  }
+
+  private async _openUpdatePrompt() {
+    await runAiPrompt(UPDATE_PROMPT)
+  }
 
   private _toggleTheme() {
     this._dark = !this._dark
@@ -168,12 +195,25 @@ export class ProtoApp extends LitElement {
     super.connectedCallback()
     window.addEventListener('hashchange', this._onHashChange)
     window.addEventListener('keydown', this._onKeyDown)
+
+    designerProfileReady.then(() => {
+      this._showOnboarding = !isOnboarded()
+    })
+
+    // Only meaningful against a running dev server — the built/GitHub-Pages
+    // app has no `/__proto-api/*` endpoints to answer this.
+    if (import.meta.env.DEV) {
+      this._updateCheckTimeout = setTimeout(() => this._checkForUpdate(), 60_000)
+      this._updateCheckInterval = setInterval(() => this._checkForUpdate(), 30 * 60_000)
+    }
   }
 
   disconnectedCallback() {
     super.disconnectedCallback()
     window.removeEventListener('hashchange', this._onHashChange)
     window.removeEventListener('keydown', this._onKeyDown)
+    clearTimeout(this._updateCheckTimeout)
+    clearInterval(this._updateCheckInterval)
   }
 
   render() {
@@ -230,6 +270,28 @@ export class ProtoApp extends LitElement {
           class="content ${this._inspect ? 'inspecting' : ''}"
           @toggle-inspect=${this._toggleInspect}
         >
+          ${this._updateAvailable
+            ? html`
+              <jh-notification
+                type="alert"
+                appearance="neutral"
+                @jh-dismiss=${() => { this._updateAvailable = false }}
+              >
+                A new version of the design system is available. Restart the dev server whenever it's convenient to pick it up.
+                <jh-button
+                  slot="jh-notification-action"
+                  appearance="secondary"
+                  size="small"
+                  label=${aiActionLabel(getAiTool())}
+                  @click=${this._openUpdatePrompt}
+                ></jh-button>
+              </jh-notification>
+            `
+            : ''}
+          <proto-onboarding-dialog
+            .open=${this._showOnboarding}
+            @close=${() => { this._showOnboarding = false }}
+          ></proto-onboarding-dialog>
           ${protoMatch
             ? html`<proto-shell .designer=${protoMatch[1]} .name=${protoMatch[2]} .inspecting=${this._inspect}></proto-shell>`
             : isSettings

@@ -6,6 +6,7 @@ import '@jack-henry/jh-elements/components/notification/notification.js'
 import '@jack-henry/jh-icons/icons-wc/icon-crosshairs.js'
 import '@jkhy/platform-tools/components/jh-platform-header.js'
 import type { TemplateMeta } from './proto-card.js'
+import { runAiPrompt } from '../utils/ai-deeplink.js'
 
 @customElement('proto-template-shell')
 export class ProtoTemplateShell extends LitElement {
@@ -49,6 +50,7 @@ export class ProtoTemplateShell extends LitElement {
   @state() private _loading = true
   @state() private _error = ''
   @state() private _copied = false
+  @state() private _actionOutcome: 'opened' | 'copied' = 'copied'
 
   private _containerRef = createRef<HTMLDivElement>()
   private _templateEl: Element | null = null
@@ -102,7 +104,7 @@ export class ProtoTemplateShell extends LitElement {
 
     const prompt = `I want to create a new prototype in the JH Prototype Playground based on the "${meta.title}" template.\n\n${meta.description}\n\nPlease run /new-prototype to get started.`
 
-    await navigator.clipboard.writeText(prompt)
+    this._actionOutcome = await runAiPrompt(prompt)
     this._copied = true
     setTimeout(() => { this._copied = false }, 2000)
   }
@@ -145,7 +147,7 @@ export class ProtoTemplateShell extends LitElement {
           <jh-button
             appearance="primary"
             size="small"
-            label=${this._copied ? 'Copied!' : 'Use template'}
+            label=${this._copied ? (this._actionOutcome === 'opened' ? 'Opened!' : 'Copied!') : 'Use template'}
             @click=${this._useTemplate}
           ></jh-button>
         </div>

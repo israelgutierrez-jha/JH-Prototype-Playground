@@ -1,6 +1,7 @@
 import { defineConfig, type Plugin } from 'vite'
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
+import { execFileSync } from 'node:child_process'
 
 const repoName = process.env.GITHUB_REPOSITORY
   ? process.env.GITHUB_REPOSITORY.split('/')[1]
@@ -389,9 +390,116 @@ function featuresWriterPlugin(): Plugin {
   }
 }
 
+// Dev-only, read-only endpoint the running app polls to nudge a designer to
+// restart `npm run dev` when `main` has moved ahead — never pulls or installs
+// anything itself, that only happens at the next `npm run dev` start
+// (scripts/dev-update.js).
+function updateStatusPlugin(): Plugin {
+  return {
+    name: 'proto-update-status',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use('/__proto-api/update-status', (_req, res) => {
+        res.setHeader('Content-Type', 'application/json')
+        try {
+          execFileSync('git', ['fetch'], { stdio: 'ignore' })
+          const local = execFileSync('git', ['rev-parse', 'HEAD']).toString().trim()
+          const upstream = execFileSync('git', ['rev-parse', '@{u}']).toString().trim()
+          res.end(JSON.stringify({ updateAvailable: local !== upstream }))
+        } catch {
+          // No git, no upstream, offline, etc. — fail silent, no update to report.
+          res.end(JSON.stringify({ updateAvailable: false }))
+        }
+      })
+    },
+  }
+}
+
+interface DesignerProfile {
+  name: string
+  onboarded: boolean
+}
+
+const DESIGNER_PROFILE_PATH = '.designer.local.json'
+
+async function readDesignerProfile(root: string): Promise<DesignerProfile> {
+  try {
+    const raw = await fs.readFile(path.resolve(root, DESIGNER_PROFILE_PATH), 'utf-8')
+    const parsed = JSON.parse(raw)
+    return {
+      name: typeof parsed?.name === 'string' ? parsed.name : '',
+      onboarded: !!parsed?.onboarded,
+    }
+  } catch {
+    return { name: '', onboarded: false }
+  }
+}
+
+async function writeDesignerProfile(root: string, profile: DesignerProfile): Promise<void> {
+  await fs.writeFile(path.resolve(root, DESIGNER_PROFILE_PATH), `${JSON.stringify(profile, null, 2)}\n`, 'utf-8')
+}
+
+// Dev-only endpoint backing the onboarding flow's designer name — persisted
+// to a gitignored local file (not localStorage) so Claude Code/Cursor slash
+// commands running outside the browser can read the same value on disk.
+function designerProfileWriterPlugin(): Plugin {
+  return {
+    name: 'proto-designer-profile-writer',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use('/__proto-api/designer-profile', async (req, res) => {
+        res.setHeader('Content-Type', 'application/json')
+
+        try {
+          if (req.method === 'GET') {
+            const profile = await readDesignerProfile(server.config.root)
+            res.statusCode = 200
+            res.end(JSON.stringify(profile))
+            return
+          }
+
+          if (req.method === 'POST') {
+            const body = JSON.parse(await readRequestBody(req))
+            const name = typeof body?.name === 'string' ? body.name.trim() : ''
+            const onboarded = !!body?.onboarded
+
+            if (name.length > 60) throw new Error('Name is too long (max 60 characters)')
+
+            const profile: DesignerProfile = { name, onboarded }
+            await withFileLock(DESIGNER_PROFILE_PATH, () => writeDesignerProfile(server.config.root, profile))
+
+            res.statusCode = 200
+            res.end(JSON.stringify({ ok: true, ...profile }))
+            return
+          }
+
+          res.statusCode = 405
+          res.end(JSON.stringify({ ok: false, error: 'Method not allowed' }))
+        } catch (err) {
+          res.statusCode = 400
+          res.end(JSON.stringify({ ok: false, error: err instanceof Error ? err.message : String(err) }))
+        }
+      })
+    },
+  }
+}
+
 export default defineConfig({
   base: repoName ? `/${repoName}/` : '/',
-  plugins: [protoMetaWriterPlugin(), externalLinksWriterPlugin(), featuresWriterPlugin()],
+  plugins: [
+    protoMetaWriterPlugin(),
+    externalLinksWriterPlugin(),
+    featuresWriterPlugin(),
+    updateStatusPlugin(),
+    designerProfileWriterPlugin(),
+  ],
+  server: {
+    // Keep this in sync with DEV_PORT in scripts/dev-update.js. strictPort
+    // means a second `npm run dev` while one's already running fails loudly
+    // instead of silently opening a duplicate server on the next free port.
+    port: 5173,
+    strictPort: true,
+  },
   build: {
     target: 'es2020',
     outDir: 'dist',

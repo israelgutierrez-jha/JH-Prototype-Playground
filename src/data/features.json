@@ -106,5 +106,27 @@
       "docs"
     ],
     "column": "shipped"
+  },
+  {
+    "id": "feat-1783525639795-7ppvu",
+    "title": "Dual repos",
+    "description": "Create another repo to push public facing prototypes",
+    "submittedBy": "Israel Gutierrez",
+    "assignedTo": "",
+    "votes": 0,
+    "tags": [
+      "workflow"
+    ],
+    "column": "requested"
+  },
+  {
+    "id": "feat-1783526159909-u2pba",
+    "title": "Cursor + Cluade + Vendor sync",
+    "description": "Commands sync when running a npm install. Research how to automate syncing so that cursor users always have the latest claude commands. (does npm run build = npm install?)",
+    "submittedBy": "Israle Gutierrez",
+    "assignedTo": "Israel Gutierrez",
+    "votes": 0,
+    "tags": [],
+    "column": "planned"
   }
 ]

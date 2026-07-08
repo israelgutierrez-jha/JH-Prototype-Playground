@@ -2,6 +2,7 @@ node_modules/
 dist/
 .DS_Store
 *.local
+.designer.local.json
 .claude/settings.local.json
 .claude/settings.json
 .cursorrules
