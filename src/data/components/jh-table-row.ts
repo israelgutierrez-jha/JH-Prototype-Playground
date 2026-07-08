@@ -8,7 +8,7 @@ export const doc: ComponentDoc = {
   category: 'data',
   status: 'stable',
   whenToUse: [
-    'Grouping header cells (`slot="header"`) or data cells into a single table row.',
+    'Grouping header cells (in a row with `slot="jh-table-header"`) or data cells into a single table row.',
   ],
   whenNotToUse: [
     'For a single-column list row — use `jh-list-item`.',
@@ -24,7 +24,7 @@ export const doc: ComponentDoc = {
     },
   ],
   gotchas: [
-    'Add `slot="header"` to the row that contains header cells.',
+    'Add `slot="jh-table-header"` to the row that contains header cells; body rows use the default slot.',
   ],
   related: [
     'jh-table',

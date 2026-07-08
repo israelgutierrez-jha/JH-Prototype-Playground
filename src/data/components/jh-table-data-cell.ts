@@ -21,7 +21,7 @@ export const doc: ComponentDoc = {
     },
   ],
   gotchas: [
-    'Cell content is slotted children, not a `label` attribute (unlike the header cell).',
+    'Cell content is slotted children — put the value between the tags, e.g. `<jh-table-data-cell>$4,200.00</jh-table-data-cell>`. There is no `label` attribute.',
   ],
   related: [
     'jh-table',

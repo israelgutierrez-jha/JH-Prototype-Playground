@@ -164,8 +164,8 @@ tab. Open the relevant file for exact attributes — do not guess them.
 
 - `jh-table` — A data table that arranges rows and columns of structured records. _Import:_ `@jack-henry/jh-elements/components/table/table.js` — _when:_ Displaying structured, multi-column data that benefits from aligned columns — transactions, reports.
 - `jh-table-data-cell` — A body cell holding one value within a table row. _Import:_ `@jack-henry/jh-elements/components/table-data-cell/table-data-cell.js` — _when:_ Holding a single value in a body `jh-table-row`; content is slotted.
-- `jh-table-header-cell` — A column header cell within a table header row. _Import:_ `@jack-henry/jh-elements/components/table-header-cell/table-header-cell.js` — _when:_ Labeling a column inside a `jh-table-row` with `slot="header"`.
-- `jh-table-row` — A row within a table — a header row or a body row of cells. _Import:_ `@jack-henry/jh-elements/components/table-row/table-row.js` — _when:_ Grouping header cells (`slot="header"`) or data cells into a single table row.
+- `jh-table-header-cell` — A column header cell within a table header row. _Import:_ `@jack-henry/jh-elements/components/table-header-cell/table-header-cell.js` — _when:_ Labeling a column inside a `jh-table-row` with `slot="jh-table-header"`.
+- `jh-table-row` — A row within a table — a header row or a body row of cells. _Import:_ `@jack-henry/jh-elements/components/table-row/table-row.js` — _when:_ Grouping header cells (in a row with `slot="jh-table-header"`) or data cells into a single table row.
 - `jha-advanced-table` — A full-featured data table with sorting, filtering, search, pagination, bulk actions, and a column editor — the legacy component still used for anything a plain jh-table can't handle. _Import:_ `@banno/jha-wc/src/tables/advanced/jha-advanced-table/jha-advanced-table.js` — _when:_ Displaying a large, information-dense dataset that needs sorting, filtering, search, and pagination out of the box — transaction lists, admin queues, reporting grids.
 
 #### Icons

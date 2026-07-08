@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
+import { pageHeaderStyles } from '../styles/page-header.js'
 import type { TemplateMeta } from './proto-card.js'
 import '@jack-henry/jh-elements/components/card/card.js'
 import '@jack-henry/jh-elements/components/button/button.js'
@@ -26,7 +27,9 @@ function loadTemplates(): TemplateEntry[] {
 
 @customElement('proto-templates')
 export class ProtoTemplates extends LitElement {
-  static styles = css`
+  static styles = [
+    pageHeaderStyles,
+    css`
     :host {
       display: block;
     }
@@ -76,18 +79,6 @@ export class ProtoTemplates extends LitElement {
       color: var(--jh-color-content-secondary-enabled, #666);
     }
 
-    .toolbar {
-      padding: var(--jh-dimension-400, 2rem) var(--jh-dimension-600, 3rem) 0;
-      display: flex;
-      align-items: center;
-      gap: var(--jh-dimension-400, 2rem);
-    }
-
-    .toolbar jh-input-search {
-      flex: 1;
-      max-width: 420px;
-    }
-
     .count {
       margin: 0 0 var(--jh-dimension-300, 1.5rem);
       font-size: var(--jh-font-size-100, 0.875rem);
@@ -100,7 +91,8 @@ export class ProtoTemplates extends LitElement {
       font-weight: var(--jh-font-weight-semibold, 600);
       color: var(--jh-color-content-primary-enabled);
     }
-  `
+  `,
+  ]
 
   @state() private _search = ''
   private _all = loadTemplates()
@@ -124,12 +116,22 @@ export class ProtoTemplates extends LitElement {
     const templates = this._filtered
 
     return html`
-      <div class="toolbar">
-        <jh-input-search
-          label="Search templates"
-          placeholder="Search by name or tag..."
-          @jh-input=${(e: CustomEvent) => { this._search = (e.target as HTMLInputElement).value }}
-        ></jh-input-search>
+      <div class="page-header">
+        <div class="page-header-text">
+          <h1 class="page-title">Templates</h1>
+          <p class="page-subtitle">
+            Reusable starting points for building new JH prototypes.
+          </p>
+        </div>
+        <div class="page-header-actions">
+          <jh-input-search
+            class="page-header-search"
+            size="small"
+            accessible-label="Search templates"
+            placeholder="Search by name or tag..."
+            @jh-input=${(e: CustomEvent) => { this._search = (e.target as HTMLInputElement).value }}
+          ></jh-input-search>
+        </div>
       </div>
 
       <main>

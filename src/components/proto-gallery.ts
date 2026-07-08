@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import { createRef, ref } from 'lit/directives/ref.js'
+import { pageHeaderStyles } from '../styles/page-header.js'
 import type { PrototypeMeta } from './proto-card.js'
 import { EXTERNAL_LINKS, type ExternalPrototypeLink as ExternalEntry } from '../data/external-links.js'
 import '@jack-henry/jh-elements/components/input-search/input-search.js'
@@ -119,27 +120,11 @@ function groupByMonth(entries: GalleryItem[]): MonthGroup[] {
 
 @customElement('proto-gallery')
 export class ProtoGallery extends LitElement {
-  static styles = css`
+  static styles = [
+    pageHeaderStyles,
+    css`
     :host {
       display: block;
-    }
-
-    .toolbar {
-      padding: var(--jh-dimension-400, 2rem) var(--jh-dimension-600, 3rem) 0;
-      display: flex;
-      align-items: center;
-      gap: var(--jh-dimension-400, 2rem);
-    }
-
-    .toolbar jh-input-search {
-      flex: 1;
-      max-width: 420px;
-    }
-
-    .toolbar .actions {
-      margin-left: auto;
-      display: flex;
-      gap: var(--jh-dimension-200, 1rem);
     }
 
     .notice {
@@ -225,7 +210,8 @@ export class ProtoGallery extends LitElement {
       gap: var(--jh-dimension-200, 1rem);
       margin-top: var(--jh-dimension-500, 2.5rem);
     }
-  `
+  `,
+  ]
 
   @state() private _search = ''
   @state() private _copied = false
@@ -360,13 +346,21 @@ export class ProtoGallery extends LitElement {
     const groups = groupByMonth(protos)
 
     return html`
-      <div class="toolbar">
-        <jh-input-search
-          label="Search prototypes"
-          placeholder="Search by name, designer, or tag..."
-          @jh-input=${(e: CustomEvent) => { this._search = (e.target as HTMLInputElement).value }}
-        ></jh-input-search>
-        <div class="actions">
+      <div class="page-header">
+        <div class="page-header-text">
+          <h1 class="page-title">Prototypes</h1>
+          <p class="page-subtitle">
+            Interactive prototypes built by the JH design team with JH components.
+          </p>
+        </div>
+        <div class="page-header-actions">
+          <jh-input-search
+            class="page-header-search"
+            size="small"
+            accessible-label="Search prototypes"
+            placeholder="Search by name, designer, or tag..."
+            @jh-input=${(e: CustomEvent) => { this._search = (e.target as HTMLInputElement).value }}
+          ></jh-input-search>
           <jh-button
             appearance="secondary"
             size="small"

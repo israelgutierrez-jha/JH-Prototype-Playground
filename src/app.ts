@@ -181,11 +181,17 @@ export class ProtoApp extends LitElement {
     const protoMatch = hash.match(/^#\/prototypes\/([^/]+)\/([^/]+)/)
     const templateViewMatch = hash.match(/^#\/templates\/(.+)$/)
     const isTemplatesList = hash === '#/templates'
-    const isResources = hash === '#/resources'
+    const isResources = hash === '#/resources' || hash.startsWith('#/resources/')
+    const resourcesPage = hash.startsWith('#/resources/components') ? 'components' : 'links'
     const isSettings = hash === '#/settings'
     const isFeatures = hash === '#/features'
     const isTemplates = isTemplatesList || !!templateViewMatch
     const isHome = !isTemplates && !isResources && !isSettings && !isFeatures
+
+    const resourcesNavItems = [
+      { label: 'Links', path: '#/resources' },
+      { label: 'Component library', path: '#/resources/components' },
+    ]
 
     return html`
       <div class="shell">
@@ -239,9 +245,12 @@ export class ProtoApp extends LitElement {
             : templateViewMatch
             ? html`<proto-template-shell class="gallery-scroll" .name=${templateViewMatch[1]} .inspecting=${this._inspect}></proto-template-shell>`
             : html`
-              <jh-platform-header title="JH Prototype Playground"></jh-platform-header>
+              <jh-platform-header
+                title="JH Prototype Playground"
+                .navItems=${isResources ? resourcesNavItems : []}
+              ></jh-platform-header>
               ${isResources
-                ? html`<proto-resources class="gallery-scroll"></proto-resources>`
+                ? html`<proto-resources class="gallery-scroll" .page=${resourcesPage}></proto-resources>`
                 : isTemplatesList
                 ? html`<proto-templates class="gallery-scroll"></proto-templates>`
                 : html`<proto-gallery class="gallery-scroll"></proto-gallery>`
