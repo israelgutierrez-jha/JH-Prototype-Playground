@@ -18,16 +18,27 @@ export const doc: ComponentDoc = {
     {
       title: 'Basic select',
       useCase: 'Choose an account type from a fixed list.',
-      code: `<jh-select label="Account type" required>
-  <jh-list-item value="checking" label="Checking"></jh-list-item>
-  <jh-list-item value="savings" label="Savings"></jh-list-item>
-  <jh-list-item value="money-market" label="Money Market"></jh-list-item>
-</jh-select>`,
+      code: `const ACCOUNT_TYPE_OPTIONS = [
+  { value: 'checking', label: 'Checking' },
+  { value: 'savings', label: 'Savings' },
+  { value: 'money-market', label: 'Money Market' },
+]
+
+// In render():
+html\`
+  <jh-select
+    label="Account type"
+    required
+    .options=\${ACCOUNT_TYPE_OPTIONS}
+    @jh-change=\${(e) => { this._accountType = e.target.value }}
+  ></jh-select>
+\``,
     },
   ],
   gotchas: [
-    'Options are `jh-list-item` elements, but inside a select use the `value` and `label` attributes (not `primary-text`).',
-    'For datasets like US states, pair with `@jack-henry/jh-datasets` helpers to populate and pre-select options.',
+    'Does NOT take `jh-list-item` children — options are set via the `.options` JS property (an array of `{ value, label }`, not an HTML attribute), which the component renders into its own internal list internally. Slotting `<jh-list-item>` elements directly silently renders an empty dropdown.',
+    'To pre-select a value on first paint, mark that option `selected: true` in the `.options` array — setting `.value` alone after the fact will NOT update the displayed label for an option that was already rendered (see the `manageSelectDataset` helper below, or the pattern in `src/prototypes/israel-gutierrez/warning-management-v1/queue-view.ts`).',
+    'For datasets like US states, pair with the `manageSelectDataset` helper from `@jack-henry/jh-datasets`, which returns `{ value, label, selected, disabled }[]` ready to pass straight into `.options`.',
   ],
   related: [
     'jh-list-item',

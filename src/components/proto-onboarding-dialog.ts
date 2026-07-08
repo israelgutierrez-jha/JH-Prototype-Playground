@@ -3,7 +3,6 @@ import { customElement, property, state } from 'lit/decorators.js'
 import '@jack-henry/jh-elements/components/card/card.js'
 import '@jack-henry/jh-elements/components/input/input.js'
 import '@jack-henry/jh-elements/components/select/select.js'
-import '@jack-henry/jh-elements/components/list-item/list-item.js'
 import '@jack-henry/jh-elements/components/button/button.js'
 import { AI_TOOL_OPTIONS, type AiTool, setAiTool } from '../utils/ai-deeplink.js'
 import { getDesignerName, setDesignerName, setOnboarded } from '../utils/designer-profile.js'
@@ -132,13 +131,9 @@ export class ProtoOnboardingDialog extends LitElement {
               <jh-select
                 label="AI tool"
                 helper-text="Which AI tool do you use for this playground?"
-                .value=${this._draftTool}
+                .options=${AI_TOOL_OPTIONS.map(o => ({ value: o.tool, label: o.label }))}
                 @jh-change=${(e: Event) => { this._draftTool = (e.target as HTMLInputElement).value }}
-              >
-                ${AI_TOOL_OPTIONS.map(
-                  option => html`<jh-list-item value=${option.tool} label=${option.label}></jh-list-item>`
-                )}
-              </jh-select>
+              ></jh-select>
 
               <div class="dialog-footer">
                 <jh-button appearance="secondary" label="Skip for now" @click=${this._skip}></jh-button>

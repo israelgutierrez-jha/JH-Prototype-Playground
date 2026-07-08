@@ -258,21 +258,25 @@ import { US_STATES_FLAT, US_STATES_GROUPED, manageSelectDataset } from '@jack-he
 | `US_STATES_GROUPED` | `{ label: string, options: { value, label }[] }[]` | States grouped by region (Northeast, South, Midwest, West) |
 | `manageSelectDataset(options)` | function | Processes a dataset for use with `jh-select` — returns items with `selected`/`disabled` flags |
 
+`jh-select` does **not** take `jh-list-item` children — it takes an `.options` JS property (`{ value, label }[]`), which it renders into its own internal list. Slotting `<jh-list-item>` elements directly renders an empty dropdown.
+
 ```ts
 import { US_STATES_FLAT, US_STATES_GROUPED, manageSelectDataset } from '@jack-henry/jh-datasets'
 import '@jack-henry/jh-elements/components/select/select.js'
 
-// Flat list — slot items directly
+// Flat list — pass straight to .options (already { value, label }[])
 // In render():
 html`
-  <jh-select label="State" required>
-    ${US_STATES_FLAT.map(s => html`
-      <jh-list-item value=${s.value} label=${s.label}></jh-list-item>
-    `)}
-  </jh-select>
+  <jh-select
+    label="State"
+    required
+    .options=${US_STATES_FLAT}
+    @jh-change=${(e) => { this._state = e.target.value }}
+  ></jh-select>
 `
 
-// With manageSelectDataset — pre-select a value or disable specific items
+// With manageSelectDataset — pre-select a value or disable specific items;
+// returns { value, label, selected, disabled }[], also ready for .options
 const processed = manageSelectDataset({
   dataset: US_STATES_FLAT,
   initialValue: 'CA',          // pre-selected

@@ -2,7 +2,6 @@ import { LitElement, html, css } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import '@jack-henry/jh-elements/components/card/card.js'
 import '@jack-henry/jh-elements/components/select/select.js'
-import '@jack-henry/jh-elements/components/list-item/list-item.js'
 import '@jack-henry/jh-elements/components/input/input.js'
 import { AI_TOOL_OPTIONS, type AiTool, getAiTool, setAiTool } from '../utils/ai-deeplink.js'
 import { designerProfileReady, getDesignerName, setDesignerName } from '../utils/designer-profile.js'
@@ -74,6 +73,9 @@ export class ProtoSettings extends LitElement {
     setAiTool(value)
   }
 
+  // No separate Save button on this page — commit on blur (jh-change)
+  // rather than on every keystroke (jh-input), so a half-typed name never
+  // hits the shared local file while they're still typing.
   private _onNameChange(e: CustomEvent<{ value: string }>) {
     this._name = e.detail.value
     setDesignerName(this._name.trim())
@@ -93,7 +95,7 @@ export class ProtoSettings extends LitElement {
             <jh-input
               label="Your name"
               .value=${this._name}
-              @jh-input=${this._onNameChange}
+              @jh-change=${this._onNameChange}
             ></jh-input>
           </div>
         </jh-card>
@@ -107,13 +109,9 @@ export class ProtoSettings extends LitElement {
             </p>
             <jh-select
               label="AI tool"
-              .value=${this._aiTool}
+              .options=${AI_TOOL_OPTIONS.map(o => ({ value: o.tool, label: o.label, selected: o.tool === this._aiTool }))}
               @jh-change=${this._onAiToolChange}
-            >
-              ${AI_TOOL_OPTIONS.map(
-                option => html`<jh-list-item value=${option.tool} label=${option.label}></jh-list-item>`
-              )}
-            </jh-select>
+            ></jh-select>
           </div>
         </jh-card>
       </div>

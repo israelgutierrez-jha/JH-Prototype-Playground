@@ -24,7 +24,7 @@ import { aiActionLabel, getAiTool, runAiPrompt } from './utils/ai-deeplink.js'
 import { designerProfileReady, isOnboarded } from './utils/designer-profile.js'
 
 const UPDATE_PROMPT =
-  "Please restart the JH Prototype Playground dev server to pick up the latest design system update — stop any running `npm run dev` process and run it again."
+  "Please restart the JH Prototype Playground dev server to pull down the latest update — stop any running `npm run dev` process and run it again."
 
 @customElement('proto-app')
 export class ProtoApp extends LitElement {
@@ -277,7 +277,7 @@ export class ProtoApp extends LitElement {
                 appearance="neutral"
                 @jh-dismiss=${() => { this._updateAvailable = false }}
               >
-                A new version of the design system is available. Restart the dev server whenever it's convenient to pick it up.
+                An update is available. Restart the dev server whenever it's convenient to pull down the changes.
                 <jh-button
                   slot="jh-notification-action"
                   appearance="secondary"
