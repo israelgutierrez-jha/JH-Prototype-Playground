@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit'
-import { customElement, state } from 'lit/decorators.js'
+import { customElement, property, state } from 'lit/decorators.js'
 import { unsafeHTML } from 'lit/directives/unsafe-html.js'
 import '@jack-henry/jh-elements/components/list-group/list-group.js'
 import '@jack-henry/jh-elements/components/list-item/list-item.js'
@@ -12,6 +12,7 @@ import '@jack-henry/jh-elements/components/table-header-cell/table-header-cell.j
 import '@jack-henry/jh-elements/components/table-data-cell/table-data-cell.js'
 import '@jack-henry/jh-elements/components/button/button.js'
 import '@jack-henry/jh-icons/icons-wc/icon-arrow-up-right-from-square.js'
+import { pageHeaderStyles } from '../styles/page-header.js'
 import { RESOURCES, type Resource } from '../data/resources.js'
 import { COMPONENT_DOCS } from '../data/components/index.js'
 import type { ComponentDoc, ComponentProp } from '../data/components/types.js'
@@ -29,33 +30,33 @@ function previewMarkup(code: string): string {
     .replace(/\s[\w-]+=\$\{[^}]*\}/g, '')
 }
 
+/**
+ * A stored example can only be shown as a live preview when it is static HTML.
+ * Property bindings (`.prop=${...}`, e.g. `jha-advanced-table`'s `.columns`)
+ * can only be set from JS, and any `${...}` left after stripping attribute
+ * bindings is dynamic child content (e.g. `${rows.map(...)}`). Either would
+ * render as broken text, so those examples show the code alone.
+ */
+function canPreview(code: string): boolean {
+  if (/\s\.[\w-]+=\$\{/.test(code)) return false
+  return !previewMarkup(code).includes('${')
+}
+
 @customElement('proto-resources')
 export class ProtoResources extends LitElement {
-  static styles = css`
+  static styles = [
+    pageHeaderStyles,
+    css`
     :host {
       display: block;
     }
 
-    .container {
-      padding: var(--jh-dimension-600, 3rem);
+    .page-body {
+      padding: var(--jh-dimension-500, 2.5rem) var(--jh-dimension-600, 3rem) var(--jh-dimension-600, 3rem);
     }
 
     .links {
       max-width: 640px;
-      margin-bottom: var(--jh-dimension-800, 4rem);
-    }
-
-    .section-title {
-      margin: 0 0 var(--jh-dimension-200, 1rem);
-      font-size: var(--jh-font-size-400, 1.25rem);
-      font-weight: var(--jh-font-weight-semibold, 600);
-      color: var(--jh-color-content-primary-enabled);
-    }
-
-    .section-subtitle {
-      margin: 0 0 var(--jh-dimension-400, 2rem);
-      font-size: var(--jh-font-size-100, 0.875rem);
-      color: var(--jh-color-content-secondary-enabled);
     }
 
     .browser {
@@ -177,6 +178,13 @@ export class ProtoResources extends LitElement {
       color: var(--jh-color-content-primary-enabled);
     }
 
+    /* When an example can't be previewed live, the code block stands alone and
+       needs its full border and rounded corners back. */
+    pre.code-only {
+      border-top: 1px solid var(--jh-color-divider-primary);
+      border-radius: var(--jh-border-radius-200, 8px);
+    }
+
     code {
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     }
@@ -184,7 +192,11 @@ export class ProtoResources extends LitElement {
     .empty {
       color: var(--jh-color-content-secondary-enabled);
     }
-  `
+  `,
+  ]
+
+  /** Which sub-page to render — driven by local (header) navigation. */
+  @property() page: 'links' | 'components' = 'links'
 
   @state() private _search = ''
   @state() private _selectedTag = COMPONENT_DOCS[0]?.tag ?? ''
@@ -217,10 +229,21 @@ export class ProtoResources extends LitElement {
   }
 
   render() {
+    return this.page === 'components' ? this._renderComponents() : this._renderLinks()
+  }
+
+  private _renderLinks() {
     return html`
-      <div class="container">
+      <div class="page-header">
+        <div class="page-header-text">
+          <h1 class="page-title">Links</h1>
+          <p class="page-subtitle">
+            Handy references and tools for building JH prototypes.
+          </p>
+        </div>
+      </div>
+      <div class="page-body">
         <div class="links">
-          <h2 class="section-title">Links</h2>
           <jh-list-group>
             ${RESOURCES.map((r: Resource) => html`
               <jh-list-item
@@ -238,11 +261,21 @@ export class ProtoResources extends LitElement {
             `)}
           </jh-list-group>
         </div>
+      </div>
+    `
+  }
 
-        <h2 class="section-title">Component library</h2>
-        <p class="section-subtitle">
-          Browse JH components with guidance on when to use them and live examples.
-        </p>
+  private _renderComponents() {
+    return html`
+      <div class="page-header">
+        <div class="page-header-text">
+          <h1 class="page-title">Component library</h1>
+          <p class="page-subtitle">
+            Browse JH components with guidance on when to use them and live examples.
+          </p>
+        </div>
+      </div>
+      <div class="page-body">
         ${COMPONENT_DOCS.length === 0
           ? html`<p class="empty">No components documented yet. Run <code>/document-component</code> to add the first one.</p>`
           : this._renderBrowser()}
@@ -357,14 +390,19 @@ export class ProtoResources extends LitElement {
         ? html`
           <div class="group">
             <p class="block-label">Examples</p>
-            ${d.examples.map(ex => html`
-              <div class="example">
-                <div class="example-title">${ex.title}</div>
-                <p class="example-usecase">${ex.useCase}</p>
-                <div class="preview">${unsafeHTML(previewMarkup(ex.code))}</div>
-                <pre><code>${ex.code}</code></pre>
-              </div>
-            `)}
+            ${d.examples.map(ex => {
+              const previewable = canPreview(ex.code)
+              return html`
+                <div class="example">
+                  <div class="example-title">${ex.title}</div>
+                  <p class="example-usecase">${ex.useCase}</p>
+                  ${previewable
+                    ? html`<div class="preview">${unsafeHTML(previewMarkup(ex.code))}</div>`
+                    : ''}
+                  <pre class=${previewable ? '' : 'code-only'}><code>${ex.code}</code></pre>
+                </div>
+              `
+            })}
           </div>
         `
         : ''}

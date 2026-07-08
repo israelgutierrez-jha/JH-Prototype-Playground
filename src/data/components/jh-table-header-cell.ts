@@ -8,7 +8,7 @@ export const doc: ComponentDoc = {
   category: 'data',
   status: 'stable',
   whenToUse: [
-    'Labeling a column inside a `jh-table-row` with `slot="header"`.',
+    'Labeling a column inside a `jh-table-row` with `slot="jh-table-header"`.',
   ],
   whenNotToUse: [
     'For body cells — use `jh-table-data-cell`.',
@@ -16,20 +16,25 @@ export const doc: ComponentDoc = {
   examples: [
     {
       title: 'Header cells',
-      useCase: 'Define the columns of a table header row.',
-      code: `<jh-table-row slot="header">
-  <jh-table-header-cell label="Account"></jh-table-header-cell>
-  <jh-table-header-cell label="Balance"></jh-table-header-cell>
-</jh-table-row>`,
+      useCase: 'Define the columns of a table header row. The header text is slotted content.',
+      code: `<jh-table>
+  <jh-table-row slot="jh-table-header">
+    <jh-table-header-cell>Account</jh-table-header-cell>
+    <jh-table-header-cell sortable>Balance</jh-table-header-cell>
+  </jh-table-row>
+</jh-table>`,
     },
   ],
   gotchas: [
-    'Header cells belong in the row marked `slot="header"`, not in body rows.',
+    'The header label is slotted text — `<jh-table-header-cell>Account</jh-table-header-cell>` — there is no `label` attribute.',
+    'Header cells belong in the row marked `slot="jh-table-header"`, not in body rows.',
+    '`sortable` only renders the sort affordance and fires `jh-sort` (`detail.sorted` cycles none → ascending → descending) — it does NOT reorder the table. Listen for `jh-sort` and re-sort your data, or use `jha-advanced-table` for built-in sorting.',
   ],
   related: [
     'jh-table',
     'jh-table-row',
     'jh-table-data-cell',
+    'jha-advanced-table',
   ],
   source: { storybookUrl: '', importedAt: '2026-06-23', componentVersion: '2.0.0-beta.14' },
 }
