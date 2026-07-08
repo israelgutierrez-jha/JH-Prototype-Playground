@@ -4,6 +4,7 @@ import '@jack-henry/jh-elements/components/card/card.js'
 import '@jack-henry/jh-elements/components/tag/tag.js'
 import '@jack-henry/jh-elements/components/tag-group/tag-group.js'
 import '@jack-henry/jh-elements/components/button/button.js'
+import { formatDesignerName } from '../utils/designer-profile.js'
 
 export interface TemplateMeta {
   title: string
@@ -23,6 +24,14 @@ export interface PrototypeMeta {
   title: string
   description: string
   designer: string
+  /**
+   * The designer's real name as typed (e.g. "Israel Gutierrez"), for display
+   * only — `designer` above stays the kebab-case folder slug and is what
+   * routing/the filesystem depend on. Falls back to a formatted version of
+   * `designer` wherever this is missing (see `formatDesignerName` in
+   * `src/utils/designer-profile.ts`).
+   */
+  designerName?: string
   tags: string[]
   createdAt: string
   navItems?: NavItem[]
@@ -85,6 +94,7 @@ export class ProtoCard extends LitElement {
   @property() title = ''
   @property() description = ''
   @property() designer = ''
+  @property() designerName = ''
   @property({ type: Array }) tags: string[] = []
   @property() createdAt = ''
   @property() href = ''
@@ -99,7 +109,7 @@ export class ProtoCard extends LitElement {
         <div class="card-inner">
           <div class="card-header">
             <h2 class="title">${this.title}</h2>
-            <span class="designer">by ${this.designer}</span>
+            <span class="designer">by ${formatDesignerName(this.designerName || this.designer)}</span>
           </div>
           <p class="description">${this.description}</p>
           ${this.tags.length ? html`

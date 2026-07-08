@@ -6,6 +6,7 @@ import '@jack-henry/jh-elements/components/input-textarea/input-textarea.js'
 import '@jack-henry/jh-elements/components/button/button.js'
 import '@jack-henry/jh-elements/components/notification/notification.js'
 import '@jack-henry/jh-icons/icons-wc/icon-xmark.js'
+import { formatDesignerName } from '../utils/designer-profile.js'
 
 export interface ProtoSettingsSavedDetail {
   title: string
@@ -102,6 +103,7 @@ export class ProtoSettingsDialog extends LitElement {
 
   @property({ type: Boolean }) open = false
   @property() designer = ''
+  @property() designerName = ''
   @property() name = ''
   @property() initialTitle = ''
   @property() initialDescription = ''
@@ -213,7 +215,7 @@ export class ProtoSettingsDialog extends LitElement {
 
               <div class="designer-field">
                 <span class="designer-label">Designer</span>
-                <span class="designer-value">${this.designer}</span>
+                <span class="designer-value">${formatDesignerName(this.designerName || this.designer)}</span>
               </div>
 
               <div class="dialog-footer">

@@ -13,7 +13,7 @@ import '@jack-henry/jh-elements/components/list-item/list-item.js'
 import '@jack-henry/jh-icons/icons-wc/icon-thumbs-up.js'
 import '@jack-henry/jh-icons/icons-wc/icon-chevron-left-small.js'
 import '@jack-henry/jh-icons/icons-wc/icon-chevron-right-small.js'
-import { designerProfileReady, getDesignerName } from '../utils/designer-profile.js'
+import { designerProfileReady, formatDesignerName, getDesignerName } from '../utils/designer-profile.js'
 import '@jack-henry/jh-icons/icons-wc/icon-ellipsis.js'
 import { FEATURE_COLUMNS, FEATURE_CARDS, type FeatureCard, type FeatureColumnId } from '../data/features.js'
 
@@ -601,7 +601,7 @@ export class ProtoFeatures extends LitElement {
                         ` : ''}
                         ${card.assignedTo ? html`<p class="assigned-to">Assigned to ${card.assignedTo}</p>` : ''}
                         <div class="card-footer">
-                          <span class="submitted-by">by ${card.submittedBy}</span>
+                          <span class="submitted-by">by ${formatDesignerName(card.submittedBy)}</span>
                           <jh-button
                             class="votes"
                             appearance="tertiary"

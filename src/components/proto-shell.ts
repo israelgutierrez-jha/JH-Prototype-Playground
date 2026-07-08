@@ -9,6 +9,7 @@ import '@jkhy/platform-tools/components/jh-platform-header.js'
 import './proto-settings-dialog.js'
 import type { ProtoSettingsSavedDetail } from './proto-settings-dialog.js'
 import type { PrototypeMeta } from './proto-card.js'
+import { formatDesignerName } from '../utils/designer-profile.js'
 
 @customElement('proto-shell')
 export class ProtoShell extends LitElement {
@@ -148,7 +149,7 @@ export class ProtoShell extends LitElement {
     return html`
       <jh-platform-header title=${this._protoTitle} .navItems=${this._protoMeta?.navItems ?? []}>
         <div slot="header-right" class="header-right">
-          <span class="designer-badge">by ${this.designer}</span>
+          <span class="designer-badge">by ${formatDesignerName(this._protoMeta?.designerName || this.designer)}</span>
           <jh-button
             appearance="tertiary"
             size="small"
@@ -183,6 +184,7 @@ export class ProtoShell extends LitElement {
       <proto-settings-dialog
         .open=${this._settingsOpen}
         .designer=${this.designer}
+        .designerName=${this._protoMeta?.designerName ?? ''}
         .name=${this.name}
         .initialTitle=${this._protoTitle}
         .initialDescription=${this._protoDescription}

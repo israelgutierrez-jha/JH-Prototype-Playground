@@ -28,8 +28,15 @@ export class ProtoOnboardingDialog extends LitElement {
     .dialog {
       width: 480px;
       max-width: 100%;
-      max-height: calc(100vh - var(--jh-dimension-1200, 3rem));
-      overflow: auto;
+      /* No max-height/overflow here on purpose: jh-select renders its
+         (closed, invisible) dropdown menu as position:absolute with
+         visibility:hidden rather than display:none, so it still occupies
+         layout space below the visible content. With overflow:auto, that
+         phantom space got counted as scrollable content, producing a
+         scrollbar and clipped view even though nothing visible needed one.
+         This dialog's content is small and fixed, so it's safe to just let
+         it size naturally instead of guarding against overflow that never
+         legitimately happens. */
       box-shadow: var(--jh-shadow-overlay);
       border-radius: var(--jh-border-radius-200, 12px);
     }
@@ -117,20 +124,20 @@ export class ProtoOnboardingDialog extends LitElement {
             <div class="dialog-inner">
               <h2 id="proto-onboarding-heading">Welcome to the JH Prototype Playground</h2>
               <p>
-                A couple of quick questions so prompts and forms throughout the gallery
-                don't have to ask again.
+                Let's get a couple of quick questions out of the way now so you don't
+                have to answer them again later.
               </p>
 
               <jh-input
                 label="Your name"
-                helper-text="Used as your folder name for new prototypes, e.g. jack-henry"
+                helper-text="e.g. John Doe"
                 .value=${this._draftName}
                 @jh-input=${(e: CustomEvent<{ value: string }>) => { this._draftName = e.detail.value }}
               ></jh-input>
 
               <jh-select
                 label="AI tool"
-                helper-text="Which AI tool do you use for this playground?"
+                helper-text="Which AI tool will you be using?"
                 .options=${AI_TOOL_OPTIONS.map(o => ({ value: o.tool, label: o.label }))}
                 @jh-change=${(e: Event) => { this._draftTool = (e.target as HTMLInputElement).value }}
               ></jh-select>

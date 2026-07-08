@@ -33,7 +33,7 @@
     "tags": [
       "workflow"
     ],
-    "column": "requested"
+    "column": "planned"
   },
   {
     "id": "fr-5",
@@ -117,7 +117,7 @@
     "tags": [
       "workflow"
     ],
-    "column": "requested"
+    "column": "planned"
   },
   {
     "id": "feat-1783526159909-u2pba",
@@ -127,6 +127,30 @@
     "assignedTo": "Israel Gutierrez",
     "votes": 0,
     "tags": [],
+    "column": "shipped"
+  },
+  {
+    "id": "feat-1783544897359-ipeih",
+    "title": "Permissions for running commands",
+    "description": "Research for a way to allow a user to grant claude/cursor to autrun commands, not just prefill the prompt/command.",
+    "submittedBy": "William Foss",
+    "assignedTo": "",
+    "votes": 0,
+    "tags": [
+      "workflow"
+    ],
+    "column": "planned"
+  },
+  {
+    "id": "feat-1783545091736-pzqxp",
+    "title": "Collapse Kanban Columns",
+    "description": "Ability to collapse columns (requested, planned, etc). That way the page doesn't become a long scroll. Maybe a way to archive as well?",
+    "submittedBy": "Isreal Gutierrez",
+    "assignedTo": "",
+    "votes": 0,
+    "tags": [
+      "workflow"
+    ],
     "column": "planned"
   }
 ]

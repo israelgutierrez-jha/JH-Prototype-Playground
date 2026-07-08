@@ -14,7 +14,7 @@ import '@jack-henry/jh-elements/components/input-url/input-url.js'
 import '@jack-henry/jh-elements/components/input-textarea/input-textarea.js'
 import '@jack-henry/jh-icons/icons-wc/icon-arrow-up-right-from-square.js'
 import { runAiPrompt } from '../utils/ai-deeplink.js'
-import { designerProfileReady, getDesignerName } from '../utils/designer-profile.js'
+import { designerProfileReady, formatDesignerName, getDesignerName } from '../utils/designer-profile.js'
 
 const NEW_PROTOTYPE_PROMPT =
   'I want to create a new prototype in the JH Prototype Playground. ' +
@@ -62,6 +62,8 @@ interface GalleryItem {
   title: string
   description: string
   designer: string
+  /** Formatted for display — see formatDesignerName in utils/designer-profile.ts. */
+  designerDisplay: string
   createdAt: string
   tags: string[]
   href?: string
@@ -246,6 +248,7 @@ export class ProtoGallery extends LitElement {
       title: p.title,
       description: p.description,
       designer: p.designer,
+      designerDisplay: formatDesignerName(p.designerName || p.designer),
       createdAt: p.createdAt,
       tags: p.tags,
       href: `#/prototypes/${p.designer}/${p.name}`,
@@ -255,6 +258,7 @@ export class ProtoGallery extends LitElement {
       title: e.title,
       description: e.description,
       designer: e.designer,
+      designerDisplay: formatDesignerName(e.designer),
       createdAt: e.createdAt,
       tags: [],
       id: e.id,
@@ -421,7 +425,7 @@ export class ProtoGallery extends LitElement {
               <jh-list-item
                 primary-text=${p.title}
                 secondary-text=${p.description}
-                primary-metadata=${p.designer}
+                primary-metadata=${p.designerDisplay}
                 tabindex="0"
                 @click=${() => this._open(p)}
                 @keydown=${(e: KeyboardEvent) => e.key === 'Enter' && this._open(p)}

@@ -91,3 +91,21 @@ export async function setDesignerName(name: string): Promise<void> {
 export async function setOnboarded(value: boolean): Promise<void> {
   await persist({ name: getDesignerName() ?? '', onboarded: value })
 }
+
+/**
+ * Displays a designer name consistently across the gallery, regardless of
+ * whether the underlying value is a kebab-case folder slug (older local
+ * prototypes' `meta.ts`, before `designerName` existed) or free text someone
+ * typed into a form. Only reformats strings that look unformatted (no
+ * uppercase letters) — anything already containing a capital letter (a real
+ * typed name) is left untouched, so this can't mangle an intentional format.
+ */
+export function formatDesignerName(raw: string): string {
+  if (!raw) return raw
+  if (/[A-Z]/.test(raw)) return raw
+  return raw
+    .split(/[-\s]+/)
+    .filter(Boolean)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}

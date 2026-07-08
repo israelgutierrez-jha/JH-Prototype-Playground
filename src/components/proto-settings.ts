@@ -94,6 +94,7 @@ export class ProtoSettings extends LitElement {
             </p>
             <jh-input
               label="Your name"
+              helper-text="e.g. John Doe"
               .value=${this._name}
               @jh-change=${this._onNameChange}
             ></jh-input>
