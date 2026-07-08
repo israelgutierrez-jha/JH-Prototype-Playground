@@ -13,6 +13,7 @@
     "audit-docs": "tsx scripts/audit-component-docs.ts",
     "sync-rules": "node scripts/sync-rules.js",
     "docs": "npm run generate-docs && npm run sync-rules",
+    "update-vendor": "node scripts/update-vendor.mjs",
     "postinstall": "node scripts/sync-rules.js"
   },
   "dependencies": {

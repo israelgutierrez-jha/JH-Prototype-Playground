@@ -1,0 +1,50 @@
+name: Vendor sync
+
+# Keeps the vendored JH packages in vendor/ current with the design system.
+# New-user setup is unaffected: this runs only in CI (or manually) where the
+# ARTIFACTORY_TOKEN secret exists, and commits the refreshed tarballs + docs so
+# everyone else keeps installing offline from the committed vendor/ files.
+
+on:
+  schedule:
+    # 06:00 UTC on the 1st of every month.
+    - cron: '0 6 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          ARTIFACTORY_TOKEN: ${{ secrets.ARTIFACTORY_TOKEN }}
+
+      - name: Refresh vendored JH packages
+        run: npm run update-vendor
+        env:
+          ARTIFACTORY_TOKEN: ${{ secrets.ARTIFACTORY_TOKEN }}
+          VENDOR_SYNC_SUMMARY: ${{ runner.temp }}/vendor-sync.md
+
+      - name: Open pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: vendor-sync/latest
+          base: main
+          title: 'chore: sync vendored JH packages'
+          body-path: ${{ runner.temp }}/vendor-sync.md
+          commit-message: 'chore: sync vendored JH packages to latest'
+          labels: dependencies
+          delete-branch: true

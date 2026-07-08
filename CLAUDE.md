@@ -115,10 +115,12 @@ All components from `@jack-henry/jh-elements`. Import path: `@jack-henry/jh-elem
 <!-- AUTO-GENERATED:COMPONENTS START — do not edit by hand; run `npm run generate-docs` -->
 
 This is a compact index — one line per component. **For the full API**
-(props, events, slots) read `src/data/components/_api.generated.ts`; for
-examples, gotchas, and detailed intent read the component's file at
+(props, events, slots) of ONE component, read only its generated file at
+`src/data/components/_api/<tag>.generated.ts` (e.g. `_api/jh-button.generated.ts`);
+for examples, gotchas, and detailed intent read the component's file at
 `src/data/components/<tag>.ts`. Both are browsable in the app **Resources**
-tab. Open the relevant file for exact attributes — do not guess them.
+tab. Open the relevant per-component file for exact attributes — do not read
+the whole set and do not guess.
 
 #### Actions
 

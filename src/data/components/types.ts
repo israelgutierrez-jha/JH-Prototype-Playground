@@ -92,7 +92,7 @@ export interface ComponentDoc {
   /**
    * API surface. Hand-authored intent files OMIT these — they are derived from
    * the package's Custom Elements Manifest and merged in at load/build time
-   * (see `_api.generated.ts`). They remain here so consumers see one shape.
+   * (see `_api/<tag>.generated.ts`). They remain here so consumers see one shape.
    */
   props?: ComponentProp[]
   events?: ComponentEvent[]
@@ -115,7 +115,7 @@ export interface ComponentDoc {
 
 /**
  * The generated API surface for one component, derived from the Custom Elements
- * Manifest. Keyed by tag in `_api.generated.ts` and merged onto the matching
+ * Manifest. Emitted as `_api/<tag>.generated.ts` and merged onto the matching
  * hand-authored intent doc.
  */
 export interface ComponentApi {

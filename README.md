@@ -93,6 +93,26 @@ Pushing to `main` automatically deploys to GitHub Pages via the Actions workflow
 https://israelgutierrez-jha.github.io/JH-Prototype-Playground/
 ```
 
+## Updating the vendored JH packages (maintainers)
+
+The JH packages are **vendored** as tarballs in `vendor/` and referenced from `package.json` via `file:./vendor/*.tgz`. That's what lets new users run `npm install` with no Artifactory token and no JH network access — but it also means the repo doesn't pick up design-system releases on its own. Setup and updates are deliberately separate concerns:
+
+- **Setup (everyone):** installs offline from the committed `vendor/` tarballs. Never needs a token. **This never changes.**
+- **Updates (maintainers/CI):** re-pack newer versions where an `ARTIFACTORY_TOKEN` is available, then commit the refreshed tarballs + lockfile + regenerated docs.
+
+**Automated (recommended):** the [`Vendor sync`](./.github/workflows/vendor-sync.yml) workflow runs monthly (and on demand via *Actions → Vendor sync → Run workflow*). It repacks each vendored package to its latest published version and opens a PR with the changes for review. It uses the `ARTIFACTORY_TOKEN` repo secret — the token never touches a contributor's machine.
+
+> One-time repo setting: enable **Settings → Actions → General → Allow GitHub Actions to create and approve pull requests** so the workflow can open its PR.
+
+**Manual:** with the token in your environment (see the setup notes in [`.npmrc`](./.npmrc)):
+
+```bash
+npm run update-vendor            # repack updates, refresh lockfile + docs
+npm run update-vendor -- --dry-run   # just report what's newer
+```
+
+After either path, **review the PR carefully**: the generated API (`src/data/components/_api/*.generated.ts`) updates automatically, but the hand-authored `whenToUse` / `examples` / `gotchas` in `src/data/components/*.ts` do not — check them against any component behavior changes before merging.
+
 ## Tech stack
 
 - [Vite 5](https://vitejs.dev/) — dev server and build

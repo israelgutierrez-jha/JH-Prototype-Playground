@@ -4,7 +4,7 @@ Scaffold or update a structured component doc in `src/data/components/`. This is
 the on-ramp for documenting the JH component library one component at a time.
 
 **The API is auto-derived.** Props, events, and slots come from the package's
-Custom Elements Manifest (`custom-elements.json`) via `_api.generated.ts` — you
+Custom Elements Manifest (`custom-elements.json`) via `_api/<tag>.generated.ts` — you
 do **not** transcribe them. Your job is to capture the *intent* the manifest
 can't: when to use the component, anti-patterns, worked examples, and gotchas.
 
@@ -76,7 +76,7 @@ Match the style in `src/data/components/jh-button.ts`.
 
 1. Run `npx tsc --noEmit` and fix any errors (most often string escaping).
 2. Run `npm run docs` — this derives the API from the manifest into
-   `_api.generated.ts`, projects everything into `CLAUDE.md`, and syncs
+   `_api/<tag>.generated.ts`, projects everything into `CLAUDE.md`, and syncs
    `.cursorrules`. The component also appears in the hosted browser
    automatically (auto-discovery).
 3. Run `npm run audit-docs` to confirm the new tag is covered and its intent

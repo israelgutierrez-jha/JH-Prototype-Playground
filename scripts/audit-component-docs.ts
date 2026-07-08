@@ -2,7 +2,7 @@
  * Coverage + intent-quality report for the component dataset.
  *
  * Since the API surface is now generated from the manifest (see
- * `_api.generated.ts`), drift on props/events/slots is impossible by
+ * `_api/<tag>.generated.ts`), drift on props/events/slots is impossible by
  * construction and guarded by `npm run check-docs` — except for legacy
  * `jha-*` tags with no manifest entry (see LEGACY_NO_MANIFEST_TAGS below),
  * whose API is hand-authored and only as accurate as its last manual review.
