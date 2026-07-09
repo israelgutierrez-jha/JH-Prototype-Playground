@@ -3,6 +3,7 @@ import { customElement } from 'lit/decorators.js'
 import '@jack-henry/jh-elements/components/card/card.js'
 import '@jack-henry/jh-elements/components/button/button.js'
 import { pageHeaderStyles } from '../styles/page-header.js'
+import { getPrototypeStats } from '../utils/prototype-stats.js'
 
 @customElement('proto-features-vision')
 export class ProtoFeaturesVision extends LitElement {
@@ -116,6 +117,8 @@ export class ProtoFeaturesVision extends LitElement {
     window.location.hash = '#/features'
   }
 
+  private _stats = getPrototypeStats()
+
   render() {
     return html`
       <div class="page-header">
@@ -173,15 +176,15 @@ export class ProtoFeaturesVision extends LitElement {
             </ul>
             <div class="stats">
               <div>
-                <span class="stat-value">3 weeks</span>
+                <span class="stat-value">${__REPO_STATS__.weeksSinceFirstCommit} weeks</span>
                 <span class="stat-label">since the first commit</span>
               </div>
               <div>
-                <span class="stat-value">6</span>
+                <span class="stat-value">${this._stats.prototypeCount}</span>
                 <span class="stat-label">prototypes built</span>
               </div>
               <div>
-                <span class="stat-value">2</span>
+                <span class="stat-value">${this._stats.designerCount}</span>
                 <span class="stat-label">designers actively building</span>
               </div>
               <div>
@@ -189,7 +192,7 @@ export class ProtoFeaturesVision extends LitElement {
                 <span class="stat-label">infrastructure cost</span>
               </div>
             </div>
-            <p class="stats-note">Snapshot as of 2026-07-08</p>
+            <p class="stats-note">These numbers update automatically — no one has to remember to edit them.</p>
           </div>
         </jh-card>
 

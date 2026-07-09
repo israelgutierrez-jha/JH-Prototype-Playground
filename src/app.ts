@@ -219,7 +219,11 @@ export class ProtoApp extends LitElement {
     const templateViewMatch = hash.match(/^#\/templates\/(.+)$/)
     const isTemplatesList = hash === '#/templates'
     const isResources = hash === '#/resources' || hash.startsWith('#/resources/')
-    const resourcesPage = hash.startsWith('#/resources/components') ? 'components' : 'links'
+    const resourcesPage = hash.startsWith('#/resources/components')
+      ? 'components'
+      : hash.startsWith('#/resources/commands')
+      ? 'commands'
+      : 'links'
     const isSettings = hash === '#/settings'
     const isFeatures = hash === '#/features' || hash === '#/features/vision'
     const isFeaturesVision = hash === '#/features/vision'
@@ -229,6 +233,7 @@ export class ProtoApp extends LitElement {
     const resourcesNavItems = [
       { label: 'Links', path: '#/resources' },
       { label: 'Component library', path: '#/resources/components' },
+      { label: 'Commands', path: '#/resources/commands' },
     ]
 
     const featuresNavItems = [

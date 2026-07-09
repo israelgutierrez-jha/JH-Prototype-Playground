@@ -16,6 +16,8 @@ import { pageHeaderStyles } from '../styles/page-header.js'
 import { RESOURCES, type Resource } from '../data/resources.js'
 import { COMPONENT_DOCS } from '../data/components/index.js'
 import type { ComponentDoc, ComponentProp } from '../data/components/types.js'
+import { DESIGNER_COMMANDS, type DesignerCommand } from '../data/commands.js'
+import { aiActionLabel, getAiTool, runAiPrompt } from '../utils/ai-deeplink.js'
 // Side-effect import: registers every documented component so previews render.
 import '../data/components/_registry.generated.js'
 
@@ -57,6 +59,10 @@ export class ProtoResources extends LitElement {
 
     .links {
       max-width: 640px;
+    }
+
+    .command-actions {
+      margin-top: var(--jh-dimension-400, 2rem);
     }
 
     .browser {
@@ -196,11 +202,26 @@ export class ProtoResources extends LitElement {
   ]
 
   /** Which sub-page to render — driven by local (header) navigation. */
-  @property() page: 'links' | 'components' = 'links'
+  @property() page: 'links' | 'components' | 'commands' = 'links'
 
   @state() private _search = ''
   @state() private _selectedTag = COMPONENT_DOCS[0]?.tag ?? ''
   @state() private _showAdvanced = false
+  @state() private _selectedCommand = DESIGNER_COMMANDS[0]?.command ?? ''
+  @state() private _commandActionOutcome: 'opened' | 'copied' | null = null
+
+  private get _selectedCommandDoc() {
+    return DESIGNER_COMMANDS.find(c => c.command === this._selectedCommand)
+  }
+
+  private _selectCommand(command: string) {
+    this._selectedCommand = command
+    this._commandActionOutcome = null
+  }
+
+  private async _openCommand(prompt: string) {
+    this._commandActionOutcome = await runAiPrompt(prompt)
+  }
 
   private _select(tag: string) {
     this._selectedTag = tag
@@ -229,7 +250,9 @@ export class ProtoResources extends LitElement {
   }
 
   render() {
-    return this.page === 'components' ? this._renderComponents() : this._renderLinks()
+    if (this.page === 'components') return this._renderComponents()
+    if (this.page === 'commands') return this._renderCommands()
+    return this._renderLinks()
   }
 
   private _renderLinks() {
@@ -261,6 +284,65 @@ export class ProtoResources extends LitElement {
             `)}
           </jh-list-group>
         </div>
+      </div>
+    `
+  }
+
+  private _renderCommands() {
+    return html`
+      <div class="page-header">
+        <div class="page-header-text">
+          <h1 class="page-title">Commands</h1>
+          <p class="page-subtitle">
+            Every slash command available to you in Claude Code or Cursor — what it does, when
+            to reach for it, and a button to open it directly in your AI tool.
+          </p>
+        </div>
+      </div>
+      <div class="page-body">
+        <div class="browser">
+          <div class="list-col">
+            <jh-list-group>
+              ${DESIGNER_COMMANDS.map(cmd => html`
+                <jh-list-item
+                  primary-text=${cmd.command}
+                  secondary-text=${cmd.title}
+                  tabindex="0"
+                  ?selected=${cmd.command === this._selectedCommand}
+                  @click=${() => this._selectCommand(cmd.command)}
+                  @keydown=${(e: KeyboardEvent) => e.key === 'Enter' && this._selectCommand(cmd.command)}
+                ></jh-list-item>
+              `)}
+            </jh-list-group>
+          </div>
+          <div class="detail">
+            ${this._selectedCommandDoc ? this._renderCommandDetail(this._selectedCommandDoc) : ''}
+          </div>
+        </div>
+      </div>
+    `
+  }
+
+  private _renderCommandDetail(cmd: DesignerCommand) {
+    return html`
+      <span class="detail-tag">${cmd.command}</span>
+      <h3 class="detail-name">${cmd.title}</h3>
+      <p class="detail-summary">${cmd.summary}</p>
+
+      <div>
+        <p class="block-label">When to use</p>
+        <ul>${cmd.whenToUse.map(w => html`<li>${w}</li>`)}</ul>
+      </div>
+
+      <div class="command-actions">
+        <jh-button
+          appearance="secondary"
+          size="small"
+          label=${this._commandActionOutcome
+            ? (this._commandActionOutcome === 'opened' ? 'Opened!' : 'Copied!')
+            : aiActionLabel(getAiTool())}
+          @click=${() => this._openCommand(cmd.prompt)}
+        ></jh-button>
       </div>
     `
   }

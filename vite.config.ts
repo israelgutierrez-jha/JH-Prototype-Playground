@@ -7,6 +7,33 @@ const repoName = process.env.GITHUB_REPOSITORY
   ? process.env.GITHUB_REPOSITORY.split('/')[1]
   : ''
 
+// Computed once, at build/dev-server-start time, and baked in via `define`
+// below — so the "Why this exists" page's repo-age stat refreshes itself on
+// every deploy (GitHub Actions rebuilds on every push to main) without
+// anyone needing to hand-edit a number. Falls back to zeros if git isn't
+// available for some reason, rather than failing the build.
+function getRepoStats(): { weeksSinceFirstCommit: number; commitCount: number } {
+  try {
+    // `git log --reverse ... -1` is a known gotcha: `-1` caps the walk to
+    // the most recent commit *before* --reverse reorders it, so it silently
+    // returns today's date instead of the first commit's. List them all and
+    // take the first line instead.
+    const firstCommitEpoch = Number(
+      execFileSync('git', ['log', '--reverse', '--format=%ct']).toString().trim().split('\n')[0]
+    )
+    const commitCount = Number(execFileSync('git', ['rev-list', '--count', 'HEAD']).toString().trim())
+    const weeksSinceFirstCommit = Math.max(
+      0,
+      Math.floor((Date.now() / 1000 - firstCommitEpoch) / (60 * 60 * 24 * 7))
+    )
+    return { weeksSinceFirstCommit, commitCount }
+  } catch {
+    return { weeksSinceFirstCommit: 0, commitCount: 0 }
+  }
+}
+
+const repoStats = getRepoStats()
+
 const SAFE_SEGMENT = /^[a-z0-9-]+$/
 
 function updateMetaField(source: string, field: 'title' | 'description', value: string): string {
@@ -486,6 +513,9 @@ function designerProfileWriterPlugin(): Plugin {
 
 export default defineConfig({
   base: repoName ? `/${repoName}/` : '/',
+  define: {
+    __REPO_STATS__: JSON.stringify(repoStats),
+  },
   plugins: [
     protoMetaWriterPlugin(),
     externalLinksWriterPlugin(),
