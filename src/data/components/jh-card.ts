@@ -14,6 +14,7 @@ export const doc: ComponentDoc = {
   whenNotToUse: [
     'For a flat list of records — use `jh-list-group` / `jh-list-item`.',
     'As a full page frame — the platform shell already owns the page.',
+    'As a wrapper around `jh-table` or `jha-advanced-table` — tables bring their own surface/border, so nesting one in a card doubles up the surface treatment. Let the table sit directly in the layout.',
   ],
   examples: [
     {

@@ -429,6 +429,7 @@ export const doc: ComponentDoc = {
     '`rowActions[].icon` names come from `jha-wc`\'s own internal icon set (e.g. `"edit"`), not `@jack-henry/jh-icons` `jh-icon-*` tags.',
     'Complex props (`columns`, `data`, `rowActions`, `tableConfig`, etc.) must be bound with Lit property syntax (`.columns=`), not as string attributes.',
     'A `dataType: "badge"` column with a falsy/empty value renders nothing (no badge, no error) — useful for representing "not yet set" rows without extra template logic.',
+    'Do not nest inside a `jh-card`. This component already provides its own toolbar/surface treatment — wrapping it in a card doubles the surface (card padding + table\'s own chrome) and reads as an unintended extra layer. Place a heading above it in a plain container instead.',
   ],
   related: ['jh-table', 'jh-list-group'],
   source: { storybookUrl: '', importedAt: '2026-07-06', componentVersion: '@banno/jha-wc@13.20.1' },

@@ -56,6 +56,7 @@ export const doc: ComponentDoc = {
     'The header row is a `jh-table-row` with `slot="jh-table-header"` (not `slot="header"`); body rows go in the default slot.',
     'Header labels and cell values are slotted text between the tags — neither `jh-table-header-cell` nor `jh-table-data-cell` takes a `label` attribute.',
     'This table is presentational — it does NOT sort, filter, or paginate on its own. A `sortable` header cell only fires `jh-sort` (`detail.sorted` cycles none → ascending → descending); you must reorder the data yourself in response. Use `jha-advanced-table` if you want that behavior built in.',
+    'Do not nest inside a `jh-card`. Tables carry their own surface/border treatment and are meant to sit directly in the page layout — wrapping one in a card doubles the surface (card padding + table border) and reads as an unintended extra layer. Place a heading/toolbar above the table in a plain container instead.',
   ],
   related: [
     'jh-table-row',

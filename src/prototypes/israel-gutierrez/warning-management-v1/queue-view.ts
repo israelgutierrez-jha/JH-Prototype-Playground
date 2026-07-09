@@ -1,7 +1,6 @@
 import { LitElement, html, css } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
 import { keyed } from 'lit/directives/keyed.js'
-import '@jack-henry/jh-elements/components/card/card.js'
 import '@jack-henry/jh-elements/components/button/button.js'
 import '@jack-henry/jh-elements/components/select/select.js'
 import '@jack-henry/jh-elements/components/notification/notification.js'
@@ -157,64 +156,62 @@ export class WarningManagementQueueView extends LitElement {
         ? html`<jh-notification class="confirm" type="alert" appearance="positive">${this._confirm}</jh-notification>`
         : ''}
 
-      <jh-card>
-        <jha-advanced-table
-          .columns=${COLUMNS}
-          .data=${this._rows}
-          .rowActions=${ROW_ACTIONS}
-          .selectedItems=${this._selected}
-          .selectedItemIdentifier=${'id'}
-          .bulkActions=${true}
-          .canEditColumns=${true}
-          .noPagination=${true}
-          .dataPlural=${'warnings'}
-          .noContentMessage=${'No warnings match your filters.'}
-          @bulk-select=${this._onBulkSelect}
-          @table-cell-click=${this._onCellClick}
-          @table-row-action=${this._onRowAction}
-        >
-          <div slot="table-actions" class="bulk-tools">
-            ${keyed(
-              `priority:${this._bulkResetKey}`,
-              html`
-                <jh-select
-                  label="Set priority"
-                  .options=${PRIORITY_OPTIONS}
-                  @jh-change=${(e: Event) => {
-                    this._bulkPriority = (e.target as HTMLInputElement).value as WarningPriority
-                  }}
-                ></jh-select>
-              `
-            )}
-            <jh-button
-              appearance="secondary"
-              size="small"
-              label="Apply"
-              ?disabled=${!this._bulkPriority}
-              @click=${this._applyBulkPriority}
-            ></jh-button>
-            ${keyed(
-              `type:${this._bulkResetKey}`,
-              html`
-                <jh-select
-                  label="Set type"
-                  .options=${TYPE_OPTIONS}
-                  @jh-change=${(e: Event) => {
-                    this._bulkType = (e.target as HTMLInputElement).value as MetadataType
-                  }}
-                ></jh-select>
-              `
-            )}
-            <jh-button
-              appearance="secondary"
-              size="small"
-              label="Apply"
-              ?disabled=${!this._bulkType}
-              @click=${this._applyBulkType}
-            ></jh-button>
-          </div>
-        </jha-advanced-table>
-      </jh-card>
+      <jha-advanced-table
+        .columns=${COLUMNS}
+        .data=${this._rows}
+        .rowActions=${ROW_ACTIONS}
+        .selectedItems=${this._selected}
+        .selectedItemIdentifier=${'id'}
+        .bulkActions=${true}
+        .canEditColumns=${true}
+        .noPagination=${true}
+        .dataPlural=${'warnings'}
+        .noContentMessage=${'No warnings match your filters.'}
+        @bulk-select=${this._onBulkSelect}
+        @table-cell-click=${this._onCellClick}
+        @table-row-action=${this._onRowAction}
+      >
+        <div slot="table-actions" class="bulk-tools">
+          ${keyed(
+            `priority:${this._bulkResetKey}`,
+            html`
+              <jh-select
+                label="Set priority"
+                .options=${PRIORITY_OPTIONS}
+                @jh-change=${(e: Event) => {
+                  this._bulkPriority = (e.target as HTMLInputElement).value as WarningPriority
+                }}
+              ></jh-select>
+            `
+          )}
+          <jh-button
+            appearance="secondary"
+            size="small"
+            label="Apply"
+            ?disabled=${!this._bulkPriority}
+            @click=${this._applyBulkPriority}
+          ></jh-button>
+          ${keyed(
+            `type:${this._bulkResetKey}`,
+            html`
+              <jh-select
+                label="Set type"
+                .options=${TYPE_OPTIONS}
+                @jh-change=${(e: Event) => {
+                  this._bulkType = (e.target as HTMLInputElement).value as MetadataType
+                }}
+              ></jh-select>
+            `
+          )}
+          <jh-button
+            appearance="secondary"
+            size="small"
+            label="Apply"
+            ?disabled=${!this._bulkType}
+            @click=${this._applyBulkType}
+          ></jh-button>
+        </div>
+      </jha-advanced-table>
     `
   }
 }
