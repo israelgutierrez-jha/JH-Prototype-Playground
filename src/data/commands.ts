@@ -51,9 +51,9 @@ export const DESIGNER_COMMANDS: DesignerCommand[] = [
     command: '/document-component',
     title: 'Document a Component',
     summary:
-      'Scaffolds or updates the "when to use it" documentation for a JH component in the Component library above — props/events/slots are always auto-derived, this only captures the intent a manifest can\'t.',
+      'Scaffolds or updates the "when to use it" documentation for a JH component in the Components page above — props/events/slots are always auto-derived, this only captures the intent a manifest can\'t.',
     whenToUse: [
-      "A component's when-to-use guidance, anti-patterns, or gotchas are missing or out of date in the Component library.",
+      "A component's when-to-use guidance, anti-patterns, or gotchas are missing or out of date in the Components page.",
       "You just learned a real gotcha (a token name, a slotted-vs-attribute quirk) worth saving for the next person who reaches for that component.",
     ],
     prompt: 'Please run /document-component to help me document a JH component.',

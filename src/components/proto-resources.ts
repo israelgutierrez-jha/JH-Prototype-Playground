@@ -259,7 +259,7 @@ export class ProtoResources extends LitElement {
     return html`
       <div class="page-header">
         <div class="page-header-text">
-          <h1 class="page-title">Links</h1>
+          <h1 class="page-title">Resources</h1>
           <p class="page-subtitle">
             Handy references and tools for building JH prototypes.
           </p>
@@ -351,7 +351,7 @@ export class ProtoResources extends LitElement {
     return html`
       <div class="page-header">
         <div class="page-header-text">
-          <h1 class="page-title">Component library</h1>
+          <h1 class="page-title">Components</h1>
           <p class="page-subtitle">
             Browse JH components with guidance on when to use them and live examples.
           </p>

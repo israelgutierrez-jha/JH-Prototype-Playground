@@ -231,8 +231,8 @@ export class ProtoApp extends LitElement {
     const isHome = !isTemplates && !isResources && !isSettings && !isFeatures
 
     const resourcesNavItems = [
-      { label: 'Links', path: '#/resources' },
-      { label: 'Component library', path: '#/resources/components' },
+      { label: 'Resources', path: '#/resources' },
+      { label: 'Components', path: '#/resources/components' },
       { label: 'Commands', path: '#/resources/commands' },
     ]
 
