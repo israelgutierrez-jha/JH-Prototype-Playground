@@ -4,6 +4,8 @@ export interface DesignerCommand {
   title: string
   summary: string
   whenToUse: string[]
+  /** Optional practical tips — setup conventions, gotchas — shown in their own section below "When to use". */
+  tips?: string[]
   /** Sent via the AI-tool deep link when a designer clicks "Open in...". */
   prompt: string
 }
@@ -32,6 +34,11 @@ export const DESIGNER_COMMANDS: DesignerCommand[] = [
       'You already have a Figma design and want it rebuilt faithfully with real, interactive JH components.',
       'Requires a Figma frame URL that includes a node-id, and the Figma MCP server authorized once per machine.',
       'Will stop and ask before writing any markup for something with no JH component equivalent — never invents custom HTML silently.',
+    ],
+    tips: [
+      'Prototyping a multi-screen flow (not just one screen)? Group every screen into one Figma Section (select the frames → right-click → "Section") and paste that Section\'s link — still just one URL.',
+      'Name each screen inside the Section with a leading number in flow order, e.g. "1 - Login", "2 - Enter code", "3 - Success". Figma\'s own click-to-navigate prototype wiring isn\'t visible to this command, so numbering is how it knows the order.',
+      'Claude infers which button advances each screen (Continue/Next/Submit-style, or the primary button) and will show you the flow it built — e.g. "Login → [Continue] → Enter code → [Verify] → Success" — before finishing, so you can correct it if it guessed wrong.',
     ],
     prompt: 'Please run /figma-to-prototype to rebuild a Figma design as a prototype.',
   },

@@ -334,6 +334,15 @@ export class ProtoResources extends LitElement {
         <ul>${cmd.whenToUse.map(w => html`<li>${w}</li>`)}</ul>
       </div>
 
+      ${cmd.tips?.length
+        ? html`
+          <div>
+            <p class="block-label">Tips</p>
+            <ul>${cmd.tips.map(t => html`<li>${t}</li>`)}</ul>
+          </div>
+        `
+        : ''}
+
       <div class="command-actions">
         <jh-button
           appearance="secondary"
