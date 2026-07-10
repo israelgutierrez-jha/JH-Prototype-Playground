@@ -37,6 +37,19 @@ export class ProtoShell extends LitElement {
     .proto-area {
       flex: 1;
       overflow: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Gives the mounted prototype element a definite height (not just
+       auto/shrink-to-content), so a prototype can opt into height: 100%
+       on its own :host for full-height layouts (e.g. a sidebar that
+       reaches the bottom of the content area). Prototypes that don't
+       need this are unaffected — overflow on .proto-area still scrolls
+       content taller than the available space. */
+    .proto-mount {
+      flex: 1;
+      min-height: 0;
     }
 
     .loading {
@@ -177,7 +190,7 @@ export class ProtoShell extends LitElement {
             <jh-notification type="alert" appearance="negative">${this._error}</jh-notification>
           </div>
         ` : html`
-          <div ${ref(this._containerRef)}></div>
+          <div class="proto-mount" ${ref(this._containerRef)}></div>
         `}
       </div>
 

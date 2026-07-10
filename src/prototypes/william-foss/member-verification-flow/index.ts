@@ -77,14 +77,13 @@ export default class MemberVerificationFlowPrototype extends LitElement {
   static styles = css`
     :host {
       display: block;
+      height: 100%;
     }
 
     .layout {
       display: flex;
       align-items: stretch;
-      min-height: 640px;
-      border: 1px solid var(--jh-color-divider-primary, #e7e7e7);
-      background: var(--jh-color-container-primary-enabled, #ffffff);
+      height: 100%;
     }
 
     .panel {
@@ -93,6 +92,7 @@ export default class MemberVerificationFlowPrototype extends LitElement {
       justify-content: space-between;
       width: 320px;
       flex-shrink: 0;
+      background: var(--jh-color-container-primary-enabled, #ffffff);
       border-right: 1px solid var(--jh-color-divider-primary, #e7e7e7);
     }
 
@@ -151,7 +151,6 @@ export default class MemberVerificationFlowPrototype extends LitElement {
     .results {
       flex: 1;
       display: flex;
-      background: var(--jh-color-container-secondary-enabled, #f4f4f4);
       min-width: 0;
     }
 

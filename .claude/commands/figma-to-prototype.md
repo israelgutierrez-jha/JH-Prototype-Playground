@@ -6,6 +6,8 @@ Scaffold a new prototype in the JH Prototype Playground **from a Figma design** 
 
 This command needs the `figma` MCP server (pre-configured in this repo's `.mcp.json` / `.cursor/mcp.json`). If Figma tools aren't available, tell the user to authorize it first — in Claude Code, run `/mcp` and choose "Authenticate"; in Cursor, open Settings → MCP and authorize the `figma` server. This is a one-time step per machine.
 
+The `chrome-devtools` MCP server (also pre-configured, no auth needed) lets you visually verify the finished prototype against the Figma screenshot instead of just telling the user to eyeball it — see step 9.
+
 ## Steps
 
 1. **Ask for the Figma URL first, and only that.** A frame URL that includes a `node-id` (e.g. `https://figma.com/design/:fileKey/:fileName?node-id=1-2`). If the URL has no `node-id`, ask for a node-specific link — don't guess one. Don't ask for name/tags/description in this same message; wait for the URL before moving on.
@@ -38,12 +40,15 @@ This command needs the `figma` MCP server (pre-configured in this repo's `.mcp.j
    - `meta.ts` — same shape as `/new-prototype`.
    - `index.ts` — build the markup and styles from the resolved Figma structure instead of freeform generation. Distinct frames/variants in the selection (e.g. separate screens for a flow) become `@state()`-driven render branches, matching the multi-step pattern already used in `login-flow`.
 
-9. Tell the user:
-   - The path to their new prototype and the `npm run dev` URL (same as `/new-prototype`).
-   - To compare the running prototype against the Figma screenshot from step 3, and iterate with `/use-jh-component` for any prop-level fixes.
+9. Verify visually if you can, then hand off:
+   - If `npm run dev` is already running (check for a listener on its port, e.g. `lsof -i :5173`) and `chrome-devtools` MCP tools are available, navigate to the new prototype's URL, take a screenshot, and compare it side-by-side against the Figma screenshot from step 3. Fix any obvious mismatches (spacing, missing elements, wrong component variant) before handing off — don't just describe what you'd fix, actually fix it.
+   - If the dev server isn't running or `chrome-devtools` isn't available, say so plainly rather than claiming visual parity you haven't checked.
+   - Either way, tell the user the path to their new prototype and the `npm run dev` URL, and to iterate with `/use-jh-component` for any remaining prop-level fixes.
 
 ## Important rules
 
 - Same hard rules as `/new-prototype`: no `@customElement`, no Tailwind/Bootstrap/external CSS libraries, no raw `<button>`/`<input>`/`<select>`, always `--jh-*` tokens.
 - Never write markup for an element that has no `jh-*` equivalent without the user's explicit go-ahead first.
 - Don't wait on Figma Code Connect mappings to exist — this command works today via heuristic matching, and gets more accurate for free if/when the design system team adds Code Connect for the JH library.
+- **A Figma frame's width/height is just the artboard bounding box — never carry it over as a fixed CSS `height`/`min-height`/`width` on the prototype's outer container(s).** The frame size determined how the design happened to be laid out in Figma at design time; it is not a layout constraint for the web prototype, which must fill whatever space the playground's platform shell content area actually gives it. Use flexible sizing (`flex: 1`, `min-width: 0`, content-driven height) instead of copying pixel dimensions from `get_metadata`/`get_variable_defs`. A fixed width on one specific element (e.g. a side panel/nav rail that's intentionally a fixed rail width by design) is fine — a fixed height/width on the top-level layout wrapper that exists only because that's how big the Figma frame was is the anti-pattern to avoid.
+- **If the frame has an element meant to reach the full height of the screen** (a side panel/nav rail with a divider that should run edge-to-edge, a split-pane layout, etc.), don't fake it with a fixed pixel height either — opt into the real available height instead: set `:host { height: 100%; }` and give the outer layout wrapper `height: 100%` too (its flex children will stretch via `align-items: stretch`). This works because `proto-shell.ts` gives the mounted prototype element a definite height to resolve percentages against — see `src/prototypes/william-foss/member-verification-flow/index.ts` for a working example.

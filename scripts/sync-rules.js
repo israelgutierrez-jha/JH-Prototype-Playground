@@ -31,9 +31,14 @@ console.log(`✓ ${sourceFiles.length} command(s) synced to .cursor/commands/`)
 // scripts/mcp-servers.js -> .mcp.json (Claude Code) + .cursor/mcp.json (Cursor)
 const claudeMcpServers = {}
 const cursorMcpServers = {}
-for (const { name, url } of mcpServers) {
-  claudeMcpServers[name] = { type: 'http', url }
-  cursorMcpServers[name] = { url }
+for (const { name, url, command, args } of mcpServers) {
+  if (url) {
+    claudeMcpServers[name] = { type: 'http', url }
+    cursorMcpServers[name] = { url }
+  } else {
+    claudeMcpServers[name] = { type: 'stdio', command, args }
+    cursorMcpServers[name] = { command, args }
+  }
 }
 
 writeFileSync('.mcp.json', JSON.stringify({ mcpServers: claudeMcpServers }, null, 2) + '\n')

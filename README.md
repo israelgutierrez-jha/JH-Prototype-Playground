@@ -11,9 +11,12 @@ Prototypes should encounter reality as early as possible. This playground lets d
 You need **Node.js** (which includes npm) installed before running anything below.
 
 - Check if you already have it: `node -v` and `npm -v` in your terminal
-- If not, install it from [nodejs.org](https://nodejs.org/) — pick the **LTS** version
+- If not, install it from [nodejs.org](https://nodejs.org/) — pick the **LTS** version, which is already recent enough for everything below
+- If you already had Node installed from a while back, make sure it's not a stale patch: you need `20.19.0+`, `22.12.0+`, or `23+` — e.g. `20.18.0` is just one patch too old. This only matters for the Chrome DevTools check below; nothing else in the repo cares. Update via [nodejs.org](https://nodejs.org/) or `nvm install --lts` if needed.
 
 No Artifactory token or JH internal network access required — all JH packages are bundled in the repo.
+
+Claude can also open your running prototype in an actual Chrome window to check it visually (screenshots, clicking through flows) — pre-configured via Chrome DevTools MCP, no account needed, just Chrome installed and the Node version above. Nothing else to do — it launches on demand the first time Claude uses it, and a visible Chrome window opening on its own at that point is expected, not a bug.
 
 **Bring your own AI and your own Figma.** This playground is AI-agnostic — use Claude Code or Cursor, whichever you already have. It doesn't bundle either tool or any credentials: you need your own Claude Code / Cursor install and, if you want to build prototypes from Figma designs (see [Building from a Figma design](#building-from-a-figma-design)), your own Figma account with access to the files you're prototyping from. The repo only ships shared *configuration* (which MCP server to connect to, which commands are available) — not licenses or logins.
 
@@ -68,7 +71,7 @@ Already have the design in Figma? Skip the text description and rebuild it direc
 /figma-to-prototype
 ```
 
-You'll be asked for a Figma frame URL (must include a `node-id`) plus a name and tags. Claude fetches the design, maps every element to the closest `jh-*` component and `--jh-*` token, and scaffolds the same `meta.ts`/`index.ts` pair `/new-prototype` produces — asking you first if something in the design has no JH equivalent, rather than inventing custom markup. Requires the one-time Figma connection above.
+You'll be asked for a Figma frame URL (must include a `node-id`) plus a name and tags. Claude fetches the design, maps every element to the closest `jh-*` component and `--jh-*` token, and scaffolds the same `meta.ts`/`index.ts` pair `/new-prototype` produces — asking you first if something in the design has no JH equivalent, rather than inventing custom markup. Requires the one-time Figma connection above. If your dev server is running, Claude will also open the result in Chrome and compare it against the Figma screenshot before handing it back to you.
 
 ## Getting help from Claude
 
