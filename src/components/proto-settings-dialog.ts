@@ -3,14 +3,19 @@ import { customElement, property, state, query } from 'lit/decorators.js'
 import '@jack-henry/jh-elements/components/card/card.js'
 import '@jack-henry/jh-elements/components/input/input.js'
 import '@jack-henry/jh-elements/components/input-textarea/input-textarea.js'
+import '@jack-henry/jh-elements/components/input-password/input-password.js'
+import '@jack-henry/jh-elements/components/switch/switch.js'
 import '@jack-henry/jh-elements/components/button/button.js'
 import '@jack-henry/jh-elements/components/notification/notification.js'
 import '@jack-henry/jh-icons/icons-wc/icon-xmark.js'
 import { formatDesignerName } from '../utils/designer-profile.js'
+import { sha256Hex } from '../utils/password-hash.js'
 
 export interface ProtoSettingsSavedDetail {
   title: string
   description: string
+  public: boolean
+  hasPassword: boolean
 }
 
 @customElement('proto-settings-dialog')
@@ -107,9 +112,14 @@ export class ProtoSettingsDialog extends LitElement {
   @property() name = ''
   @property() initialTitle = ''
   @property() initialDescription = ''
+  @property({ type: Boolean }) initialPublic = false
+  @property({ type: Boolean }) initialHasPassword = false
 
   @state() private _draftTitle = ''
   @state() private _draftDescription = ''
+  @state() private _draftPublic = false
+  @state() private _draftPassword = ''
+  @state() private _clearPassword = false
   @state() private _saving = false
   @state() private _error = ''
 
@@ -133,6 +143,9 @@ export class ProtoSettingsDialog extends LitElement {
     if (changed.has('open') && this.open) {
       this._draftTitle = this.initialTitle
       this._draftDescription = this.initialDescription
+      this._draftPublic = this.initialPublic
+      this._draftPassword = ''
+      this._clearPassword = false
       this._error = ''
       this._saving = false
       requestAnimationFrame(() => this._titleInput?.focus())
@@ -153,6 +166,12 @@ export class ProtoSettingsDialog extends LitElement {
     this._error = ''
 
     try {
+      const passwordHash = this._clearPassword
+        ? ''
+        : this._draftPassword.trim()
+        ? await sha256Hex(this._draftPassword.trim())
+        : undefined
+
       const res = await fetch('/__proto-api/meta', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -161,6 +180,8 @@ export class ProtoSettingsDialog extends LitElement {
           name: this.name,
           title: this._draftTitle,
           description: this._draftDescription,
+          public: this._draftPublic,
+          ...(passwordHash !== undefined ? { passwordHash } : {}),
         }),
       })
       const result = await res.json()
@@ -171,7 +192,12 @@ export class ProtoSettingsDialog extends LitElement {
         new CustomEvent<ProtoSettingsSavedDetail>('saved', {
           bubbles: true,
           composed: true,
-          detail: { title: result.title, description: result.description },
+          detail: {
+            title: result.title,
+            description: result.description,
+            public: result.public,
+            hasPassword: result.hasPassword,
+          },
         })
       )
     } catch (err) {
@@ -212,6 +238,39 @@ export class ProtoSettingsDialog extends LitElement {
                 .value=${this._draftDescription}
                 @jh-input=${(e: CustomEvent<{ value: string }>) => { this._draftDescription = e.detail.value }}
               ></jh-input-textarea>
+
+              <jh-switch
+                label="Show in external (CU) gallery"
+                helper-text="Only prototypes marked here are included in the restricted external build shared with credit unions/stakeholders."
+                ?checked=${this._draftPublic}
+                @jh-change=${(e: Event) => { this._draftPublic = (e.target as HTMLInputElement).checked }}
+              ></jh-switch>
+
+              <jh-input-password
+                label="External access password"
+                helper-text=${this.initialHasPassword && !this._clearPassword
+                  ? 'A password is already set — leave blank to keep it.'
+                  : 'Optional — required to view this prototype in the external build.'}
+                .value=${this._draftPassword}
+                @jh-input=${(e: CustomEvent<{ value: string }>) => {
+                  this._draftPassword = e.detail.value
+                  this._clearPassword = false
+                }}
+              ></jh-input-password>
+
+              ${this.initialHasPassword && !this._clearPassword
+                ? html`
+                  <jh-button
+                    appearance="tertiary"
+                    size="small"
+                    label="Remove password"
+                    @click=${() => { this._clearPassword = true; this._draftPassword = '' }}
+                  ></jh-button>
+                `
+                : ''}
+              ${this._clearPassword
+                ? html`<jh-notification type="info" appearance="neutral">Password will be removed on save.</jh-notification>`
+                : ''}
 
               <div class="designer-field">
                 <span class="designer-label">Designer</span>

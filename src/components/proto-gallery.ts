@@ -16,6 +16,8 @@ import '@jack-henry/jh-icons/icons-wc/icon-arrow-up-right-from-square.js'
 import { runAiPrompt } from '../utils/ai-deeplink.js'
 import { designerProfileReady, formatDesignerName, getDesignerName } from '../utils/designer-profile.js'
 
+const IS_EXTERNAL_BUILD = import.meta.env.VITE_EXTERNAL_BUILD === 'true'
+
 const NEW_PROTOTYPE_PROMPT =
   'I want to create a new prototype in the JH Prototype Playground. ' +
   'Please run /new-prototype to scaffold it, then help me build it using only JH components.'
@@ -253,7 +255,7 @@ export class ProtoGallery extends LitElement {
       tags: p.tags,
       href: `#/prototypes/${p.designer}/${p.name}`,
     }))
-    const external: GalleryItem[] = this._external.map(e => ({
+    const external: GalleryItem[] = IS_EXTERNAL_BUILD ? [] : this._external.map(e => ({
       kind: 'external',
       title: e.title,
       description: e.description,
@@ -369,20 +371,22 @@ export class ProtoGallery extends LitElement {
             placeholder="Search by name, designer, or tag..."
             @jh-input=${(e: CustomEvent) => { this._search = (e.target as HTMLInputElement).value }}
           ></jh-input-search>
-          <jh-button
-            appearance="secondary"
-            size="small"
-            label="Link external"
-            @click=${this._openDialog}
-          ></jh-button>
-          <jh-button
-            appearance="primary"
-            size="small"
-            label=${this._copied
-              ? (this._actionOutcome === 'opened' ? 'Opened!' : 'Command copied!')
-              : 'New prototype'}
-            @click=${this._copyNewPrototype}
-          ></jh-button>
+          ${IS_EXTERNAL_BUILD ? '' : html`
+            <jh-button
+              appearance="secondary"
+              size="small"
+              label="Link external"
+              @click=${this._openDialog}
+            ></jh-button>
+            <jh-button
+              appearance="primary"
+              size="small"
+              label=${this._copied
+                ? (this._actionOutcome === 'opened' ? 'Opened!' : 'Command copied!')
+                : 'New prototype'}
+              @click=${this._copyNewPrototype}
+            ></jh-button>
+          `}
         </div>
       </div>
 
@@ -417,7 +421,9 @@ export class ProtoGallery extends LitElement {
         ` : protos.length === 0 ? html`
           <div class="empty">
             <h2>No prototypes yet</h2>
-            <p>Use <strong>New prototype</strong> to scaffold one in Claude Code or Cursor, or <strong>Link external</strong> to add a link.</p>
+            ${IS_EXTERNAL_BUILD ? '' : html`
+              <p>Use <strong>New prototype</strong> to scaffold one in Claude Code or Cursor, or <strong>Link external</strong> to add a link.</p>
+            `}
           </div>
         ` : groups.map(group => html`
           <jh-list-group label=${group.label}>

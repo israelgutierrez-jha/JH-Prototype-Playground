@@ -36,13 +36,31 @@ const repoStats = getRepoStats()
 
 const SAFE_SEGMENT = /^[a-z0-9-]+$/
 
-function updateMetaField(source: string, field: 'title' | 'description', value: string): string {
-  const serialized = JSON.stringify(value)
-  const pattern = new RegExp(`(\\b${field}:\\s*)(['"\`])(?:\\\\.|(?!\\2).)*\\2`, 's')
-  if (!pattern.test(source)) {
-    throw new Error(`Could not find a "${field}" field to update in meta.ts`)
+// Replaces `field`'s value if present in the meta object literal, otherwise
+// inserts it right after the opening brace — lets us add `public`/
+// `passwordHash` to older meta.ts files that predate those fields, while
+// title/description (present in every meta.ts today) still just replace.
+function upsertMetaField(source: string, field: string, value: string | boolean): string {
+  const serialized = typeof value === 'boolean' ? String(value) : JSON.stringify(value)
+  const pattern = new RegExp(`(\\b${field}:\\s*)(?:(['"\`])(?:\\\\.|(?!\\2).)*\\2|true|false)`, 's')
+  if (pattern.test(source)) {
+    return source.replace(pattern, `$1${serialized}`)
   }
-  return source.replace(pattern, `$1${serialized}`)
+
+  const openBrace = /(meta:\s*PrototypeMeta\s*=\s*\{)/
+  if (!openBrace.test(source)) {
+    throw new Error('Could not find the meta object literal to update in meta.ts')
+  }
+  return source.replace(openBrace, `$1\n  ${field}: ${serialized},`)
+}
+
+function metaHasNonEmptyPasswordHash(source: string): boolean {
+  const match = source.match(/\bpasswordHash:\s*(['"`])((?:\\.|(?!\1).)*)\1/s)
+  return !!match && match[2].length > 0
+}
+
+function metaIsPublic(source: string): boolean {
+  return /\bpublic:\s*true\b/.test(source)
 }
 
 function readRequestBody(req: import('node:http').IncomingMessage): Promise<string> {
@@ -87,7 +105,7 @@ function protoMetaWriterPlugin(): Plugin {
 
         try {
           const body = JSON.parse(await readRequestBody(req))
-          const { designer, name, title, description } = body ?? {}
+          const { designer, name, title, description, public: isPublic, passwordHash } = body ?? {}
 
           if (typeof designer !== 'string' || !SAFE_SEGMENT.test(designer)) {
             throw new Error('Invalid designer')
@@ -107,6 +125,16 @@ function protoMetaWriterPlugin(): Plugin {
           if (description.length > 500) {
             throw new Error('Description is too long (max 500 characters)')
           }
+          if (isPublic !== undefined && typeof isPublic !== 'boolean') {
+            throw new Error('public must be a boolean')
+          }
+          // passwordHash: undefined = leave unchanged, '' = clear, otherwise
+          // must look like a hex SHA-256 digest — the client always hashes
+          // before sending, so anything else means a bug upstream, not a
+          // real password making it here.
+          if (passwordHash !== undefined && passwordHash !== '' && !/^[a-f0-9]{64}$/.test(passwordHash)) {
+            throw new Error('passwordHash must be empty or a hex SHA-256 digest')
+          }
 
           const filePath = path.resolve(server.config.root, 'src/prototypes', designer, name, 'meta.ts')
           const protoRoot = path.resolve(server.config.root, 'src/prototypes')
@@ -114,7 +142,7 @@ function protoMetaWriterPlugin(): Plugin {
             throw new Error('Invalid path')
           }
 
-          await withFileLock(filePath, async () => {
+          const result = await withFileLock(filePath, async () => {
             let source: string
             try {
               source = await fs.readFile(filePath, 'utf-8')
@@ -122,14 +150,27 @@ function protoMetaWriterPlugin(): Plugin {
               throw new Error(`meta.ts not found for ${designer}/${name}`)
             }
 
-            source = updateMetaField(source, 'title', title.trim())
-            source = updateMetaField(source, 'description', description.trim())
+            source = upsertMetaField(source, 'title', title.trim())
+            source = upsertMetaField(source, 'description', description.trim())
+            if (typeof isPublic === 'boolean') {
+              source = upsertMetaField(source, 'public', isPublic)
+            }
+            if (typeof passwordHash === 'string') {
+              source = upsertMetaField(source, 'passwordHash', passwordHash)
+            }
             await fs.writeFile(filePath, source, 'utf-8')
+            return { public: metaIsPublic(source), hasPassword: metaHasNonEmptyPasswordHash(source) }
           })
 
           res.setHeader('Content-Type', 'application/json')
           res.statusCode = 200
-          res.end(JSON.stringify({ ok: true, title: title.trim(), description: description.trim() }))
+          res.end(JSON.stringify({
+            ok: true,
+            title: title.trim(),
+            description: description.trim(),
+            public: result.public,
+            hasPassword: result.hasPassword,
+          }))
         } catch (err) {
           res.setHeader('Content-Type', 'application/json')
           res.statusCode = 400
@@ -511,6 +552,76 @@ function designerProfileWriterPlugin(): Plugin {
   }
 }
 
+const EXTERNAL_ACCESS_PATH = 'src/config/external-access.ts'
+
+function upsertExternalAccessHash(source: string, hash: string): string {
+  const serialized = JSON.stringify(hash)
+  const pattern = /(galleryPasswordHash:\s*)(['"`])(?:\\.|(?!\2).)*\2/s
+  if (!pattern.test(source)) {
+    throw new Error('Could not find galleryPasswordHash field to update')
+  }
+  return source.replace(pattern, `$1${serialized}`)
+}
+
+// Dev-only endpoint for the global Settings page's "External gallery
+// password" field — same read-modify-write-to-real-file pattern as
+// proto-meta-writer above, just for the one repo-wide config in
+// src/config/external-access.ts instead of a per-prototype meta.ts.
+function externalAccessWriterPlugin(): Plugin {
+  return {
+    name: 'proto-external-access-writer',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use('/__proto-api/external-access', async (req, res) => {
+        res.setHeader('Content-Type', 'application/json')
+
+        try {
+          const filePath = path.resolve(server.config.root, EXTERNAL_ACCESS_PATH)
+
+          if (req.method === 'GET') {
+            let hasPassword = false
+            try {
+              const source = await fs.readFile(filePath, 'utf-8')
+              const match = source.match(/galleryPasswordHash:\s*(['"`])((?:\\.|(?!\1).)*)\1/s)
+              hasPassword = !!match && match[2].length > 0
+            } catch {
+              // File missing entirely — treat as no password set.
+            }
+            res.statusCode = 200
+            res.end(JSON.stringify({ hasPassword }))
+            return
+          }
+
+          if (req.method === 'POST') {
+            const body = JSON.parse(await readRequestBody(req))
+            const passwordHash = typeof body?.passwordHash === 'string' ? body.passwordHash : undefined
+
+            if (passwordHash === undefined) throw new Error('passwordHash is required')
+            if (passwordHash !== '' && !/^[a-f0-9]{64}$/.test(passwordHash)) {
+              throw new Error('passwordHash must be empty or a hex SHA-256 digest')
+            }
+
+            await withFileLock(filePath, async () => {
+              const source = await fs.readFile(filePath, 'utf-8')
+              await fs.writeFile(filePath, upsertExternalAccessHash(source, passwordHash), 'utf-8')
+            })
+
+            res.statusCode = 200
+            res.end(JSON.stringify({ ok: true, hasPassword: passwordHash.length > 0 }))
+            return
+          }
+
+          res.statusCode = 405
+          res.end(JSON.stringify({ ok: false, error: 'Method not allowed' }))
+        } catch (err) {
+          res.statusCode = 400
+          res.end(JSON.stringify({ ok: false, error: err instanceof Error ? err.message : String(err) }))
+        }
+      })
+    },
+  }
+}
+
 export default defineConfig({
   base: repoName ? `/${repoName}/` : '/',
   define: {
@@ -522,6 +633,7 @@ export default defineConfig({
     featuresWriterPlugin(),
     updateStatusPlugin(),
     designerProfileWriterPlugin(),
+    externalAccessWriterPlugin(),
   ],
   server: {
     // Keep this in sync with DEV_PORT in scripts/dev-update.js. strictPort

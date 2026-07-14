@@ -10,6 +10,8 @@ import './components/proto-inspector.js'
 import './components/proto-features.js'
 import './components/proto-features-vision.js'
 import './components/proto-onboarding-dialog.js'
+import './components/proto-password-gate.js'
+import { externalAccessConfig } from './config/external-access.js'
 import '@jkhy/platform-tools/components/jh-platform-nav.js'
 import '@jkhy/platform-tools/components/jh-platform-header.js'
 import '@jack-henry/jh-elements/components/notification/notification.js'
@@ -23,6 +25,8 @@ import '@jack-henry/jh-icons/icons-wc/icon-moon-stars.js'
 import '@jack-henry/jh-icons/icons-wc/icon-list-ul-pen.js'
 import { aiActionLabel, getAiTool, runAiPrompt } from './utils/ai-deeplink.js'
 import { designerProfileReady, isOnboarded } from './utils/designer-profile.js'
+
+const IS_EXTERNAL_BUILD = import.meta.env.VITE_EXTERNAL_BUILD === 'true'
 
 const UPDATE_PROMPT =
   "Please restart the JH Prototype Playground dev server to pull down the latest update — stop any running `npm run dev` process and run it again."
@@ -141,7 +145,8 @@ export class ProtoApp extends LitElement {
     proto-templates.gallery-scroll,
     proto-template-shell.gallery-scroll,
     proto-features.gallery-scroll,
-    proto-features-vision.gallery-scroll {
+    proto-features-vision.gallery-scroll,
+    proto-password-gate.gallery-scroll {
       flex: 1;
       overflow: auto;
     }
@@ -193,9 +198,11 @@ export class ProtoApp extends LitElement {
     window.addEventListener('hashchange', this._onHashChange)
     window.addEventListener('keydown', this._onKeyDown)
 
-    designerProfileReady.then(() => {
-      this._showOnboarding = !isOnboarded()
-    })
+    if (!IS_EXTERNAL_BUILD) {
+      designerProfileReady.then(() => {
+        this._showOnboarding = !isOnboarded()
+      })
+    }
 
     // Only meaningful against a running dev server — the built/GitHub-Pages
     // app has no `/__proto-api/*` endpoints to answer this.
@@ -218,16 +225,16 @@ export class ProtoApp extends LitElement {
     const protoMatch = hash.match(/^#\/prototypes\/([^/]+)\/([^/]+)/)
     const templateViewMatch = hash.match(/^#\/templates\/(.+)$/)
     const isTemplatesList = hash === '#/templates'
-    const isResources = hash === '#/resources' || hash.startsWith('#/resources/')
+    const isResources = !IS_EXTERNAL_BUILD && (hash === '#/resources' || hash.startsWith('#/resources/'))
     const resourcesPage = hash.startsWith('#/resources/components')
       ? 'components'
       : hash.startsWith('#/resources/commands')
       ? 'commands'
       : 'links'
-    const isSettings = hash === '#/settings'
-    const isFeatures = hash === '#/features' || hash === '#/features/vision'
+    const isSettings = !IS_EXTERNAL_BUILD && hash === '#/settings'
+    const isFeatures = !IS_EXTERNAL_BUILD && (hash === '#/features' || hash === '#/features/vision')
     const isFeaturesVision = hash === '#/features/vision'
-    const isTemplates = isTemplatesList || !!templateViewMatch
+    const isTemplates = !IS_EXTERNAL_BUILD && (isTemplatesList || !!templateViewMatch)
     const isHome = !isTemplates && !isResources && !isSettings && !isFeatures
 
     const resourcesNavItems = [
@@ -249,20 +256,24 @@ export class ProtoApp extends LitElement {
             <a class="nav-link ${isHome ? 'active' : ''}" href="#/" title="Prototypes">
               <jh-icon-browser size="small"></jh-icon-browser>
             </a>
-            <a class="nav-link ${isTemplates ? 'active' : ''}" href="#/templates" title="Templates">
-              <jh-icon-table-layout size="small"></jh-icon-table-layout>
-            </a>
-            <a class="nav-link ${isResources ? 'active' : ''}" href="#/resources" title="Resources">
-              <jh-icon-books size="small"></jh-icon-books>
-            </a>
-            <a class="nav-link ${isSettings ? 'active' : ''}" href="#/settings" title="Settings">
-              <jh-icon-gear size="small"></jh-icon-gear>
-            </a>
+            ${IS_EXTERNAL_BUILD ? '' : html`
+              <a class="nav-link ${isTemplates ? 'active' : ''}" href="#/templates" title="Templates">
+                <jh-icon-table-layout size="small"></jh-icon-table-layout>
+              </a>
+              <a class="nav-link ${isResources ? 'active' : ''}" href="#/resources" title="Resources">
+                <jh-icon-books size="small"></jh-icon-books>
+              </a>
+              <a class="nav-link ${isSettings ? 'active' : ''}" href="#/settings" title="Settings">
+                <jh-icon-gear size="small"></jh-icon-gear>
+              </a>
+            `}
           </div>
           <div class="nav-bottom">
-            <a class="nav-link ${isFeatures ? 'active' : ''}" href="#/features" title="Features">
-              <jh-icon-list-ul-pen size="small"></jh-icon-list-ul-pen>
-            </a>
+            ${IS_EXTERNAL_BUILD ? '' : html`
+              <a class="nav-link ${isFeatures ? 'active' : ''}" href="#/features" title="Features">
+                <jh-icon-list-ul-pen size="small"></jh-icon-list-ul-pen>
+              </a>
+            `}
             <button
               class="nav-btn"
               title=${this._dark ? 'Switch to light mode' : 'Switch to dark mode'}
@@ -296,10 +307,12 @@ export class ProtoApp extends LitElement {
               </jh-notification>
             `
             : ''}
-          <proto-onboarding-dialog
-            .open=${this._showOnboarding}
-            @close=${() => { this._showOnboarding = false }}
-          ></proto-onboarding-dialog>
+          ${IS_EXTERNAL_BUILD ? '' : html`
+            <proto-onboarding-dialog
+              .open=${this._showOnboarding}
+              @close=${() => { this._showOnboarding = false }}
+            ></proto-onboarding-dialog>
+          `}
           ${protoMatch
             ? html`<proto-shell .designer=${protoMatch[1]} .name=${protoMatch[2]} .inspecting=${this._inspect}></proto-shell>`
             : isSettings
@@ -315,7 +328,7 @@ export class ProtoApp extends LitElement {
                 : html`<proto-features class="gallery-scroll"></proto-features>`
               }
             `
-            : templateViewMatch
+            : !IS_EXTERNAL_BUILD && templateViewMatch
             ? html`<proto-template-shell class="gallery-scroll" .name=${templateViewMatch[1]} .inspecting=${this._inspect}></proto-template-shell>`
             : html`
               <jh-platform-header
@@ -324,8 +337,19 @@ export class ProtoApp extends LitElement {
               ></jh-platform-header>
               ${isResources
                 ? html`<proto-resources class="gallery-scroll" .page=${resourcesPage}></proto-resources>`
-                : isTemplatesList
+                : !IS_EXTERNAL_BUILD && isTemplatesList
                 ? html`<proto-templates class="gallery-scroll"></proto-templates>`
+                : IS_EXTERNAL_BUILD
+                ? html`
+                  <proto-password-gate
+                    class="gallery-scroll"
+                    .passwordHash=${externalAccessConfig.galleryPasswordHash}
+                    unlockKey="external-gallery"
+                    label="Enter the password provided to you to view this gallery."
+                  >
+                    <proto-gallery></proto-gallery>
+                  </proto-password-gate>
+                `
                 : html`<proto-gallery class="gallery-scroll"></proto-gallery>`
               }
             `

@@ -35,6 +35,18 @@ export interface PrototypeMeta {
   tags: string[]
   createdAt: string
   navItems?: NavItem[]
+  /**
+   * Opt-in flag for the restricted external (CU-facing) gallery build — see
+   * CLAUDE.md's "External / CU-facing gallery" section. Absent or `false`
+   * means the prototype is never included in that build (safe default).
+   */
+  public?: boolean
+  /**
+   * Hex SHA-256 hash of a password required to view this prototype in the
+   * external build (see `src/utils/password-hash.ts`). Never store the
+   * plaintext password here.
+   */
+  passwordHash?: string
 }
 
 @customElement('proto-card')

@@ -7,9 +7,12 @@ import '@jack-henry/jh-icons/icons-wc/icon-pencil.js'
 import '@jack-henry/jh-icons/icons-wc/icon-crosshairs.js'
 import '@jkhy/platform-tools/components/jh-platform-header.js'
 import './proto-settings-dialog.js'
+import './proto-password-gate.js'
 import type { ProtoSettingsSavedDetail } from './proto-settings-dialog.js'
 import type { PrototypeMeta } from './proto-card.js'
 import { formatDesignerName } from '../utils/designer-profile.js'
+
+const IS_EXTERNAL_BUILD = import.meta.env.VITE_EXTERNAL_BUILD === 'true'
 
 @customElement('proto-shell')
 export class ProtoShell extends LitElement {
@@ -74,6 +77,8 @@ export class ProtoShell extends LitElement {
   @state() private _settingsOpen = false
   @state() private _titleOverride: string | null = null
   @state() private _descriptionOverride: string | null = null
+  @state() private _publicOverride: boolean | null = null
+  @state() private _hasPasswordOverride: boolean | null = null
 
   private _containerRef = createRef<HTMLDivElement>()
   private _protoEl: Element | null = null
@@ -100,6 +105,14 @@ export class ProtoShell extends LitElement {
 
   private get _protoDescription(): string {
     return this._descriptionOverride ?? this._protoMeta?.description ?? ''
+  }
+
+  private get _protoPublic(): boolean {
+    return this._publicOverride ?? this._protoMeta?.public ?? false
+  }
+
+  private get _protoHasPassword(): boolean {
+    return this._hasPasswordOverride ?? !!this._protoMeta?.passwordHash
   }
 
   private async _loadPrototype(designer: string, name: string) {
@@ -140,6 +153,8 @@ export class ProtoShell extends LitElement {
         this._loadedKey = ''
         this._titleOverride = null
         this._descriptionOverride = null
+        this._publicOverride = null
+        this._hasPasswordOverride = null
         this._loadPrototype(this.designer, this.name)
       }
     }
@@ -155,6 +170,8 @@ export class ProtoShell extends LitElement {
   private _onSettingsSaved(e: CustomEvent<ProtoSettingsSavedDetail>) {
     this._titleOverride = e.detail.title
     this._descriptionOverride = e.detail.description
+    this._publicOverride = e.detail.public
+    this._hasPasswordOverride = e.detail.hasPassword
     this._settingsOpen = false
   }
 
@@ -163,22 +180,24 @@ export class ProtoShell extends LitElement {
       <jh-platform-header title=${this._protoTitle} .navItems=${this._protoMeta?.navItems ?? []}>
         <div slot="header-right" class="header-right">
           <span class="designer-badge">by ${formatDesignerName(this._protoMeta?.designerName || this.designer)}</span>
-          <jh-button
-            appearance="tertiary"
-            size="small"
-            accessible-label="Prototype settings"
-            @click=${() => { this._settingsOpen = true }}
-          >
-            <jh-icon-pencil slot="jh-button-icon-left" size="small"></jh-icon-pencil>
-          </jh-button>
-          <jh-button
-            appearance=${this.inspecting ? 'primary' : 'secondary'}
-            size="small"
-            accessible-label=${this.inspecting ? 'Turn off inspect mode' : 'Inspect components (hover to identify)'}
-            @click=${() => this.dispatchEvent(new CustomEvent('toggle-inspect', { bubbles: true, composed: true }))}
-          >
-            <jh-icon-crosshairs slot="jh-button-icon-left" size="small"></jh-icon-crosshairs>
-          </jh-button>
+          ${IS_EXTERNAL_BUILD ? '' : html`
+            <jh-button
+              appearance="tertiary"
+              size="small"
+              accessible-label="Prototype settings"
+              @click=${() => { this._settingsOpen = true }}
+            >
+              <jh-icon-pencil slot="jh-button-icon-left" size="small"></jh-icon-pencil>
+            </jh-button>
+            <jh-button
+              appearance=${this.inspecting ? 'primary' : 'secondary'}
+              size="small"
+              accessible-label=${this.inspecting ? 'Turn off inspect mode' : 'Inspect components (hover to identify)'}
+              @click=${() => this.dispatchEvent(new CustomEvent('toggle-inspect', { bubbles: true, composed: true }))}
+            >
+              <jh-icon-crosshairs slot="jh-button-icon-left" size="small"></jh-icon-crosshairs>
+            </jh-button>
+          `}
         </div>
       </jh-platform-header>
 
@@ -190,20 +209,30 @@ export class ProtoShell extends LitElement {
             <jh-notification type="alert" appearance="negative">${this._error}</jh-notification>
           </div>
         ` : html`
-          <div class="proto-mount" ${ref(this._containerRef)}></div>
+          <proto-password-gate
+            .passwordHash=${this._protoMeta?.passwordHash ?? ''}
+            unlockKey=${`proto:${this.designer}/${this.name}`}
+            label="This prototype requires a password to view."
+          >
+            <div class="proto-mount" ${ref(this._containerRef)}></div>
+          </proto-password-gate>
         `}
       </div>
 
-      <proto-settings-dialog
-        .open=${this._settingsOpen}
-        .designer=${this.designer}
-        .designerName=${this._protoMeta?.designerName ?? ''}
-        .name=${this.name}
-        .initialTitle=${this._protoTitle}
-        .initialDescription=${this._protoDescription}
-        @close=${() => { this._settingsOpen = false }}
-        @saved=${this._onSettingsSaved}
-      ></proto-settings-dialog>
+      ${IS_EXTERNAL_BUILD ? '' : html`
+        <proto-settings-dialog
+          .open=${this._settingsOpen}
+          .designer=${this.designer}
+          .designerName=${this._protoMeta?.designerName ?? ''}
+          .name=${this.name}
+          .initialTitle=${this._protoTitle}
+          .initialDescription=${this._protoDescription}
+          .initialPublic=${this._protoPublic}
+          .initialHasPassword=${this._protoHasPassword}
+          @close=${() => { this._settingsOpen = false }}
+          @saved=${this._onSettingsSaved}
+        ></proto-settings-dialog>
+      `}
     `
   }
 }

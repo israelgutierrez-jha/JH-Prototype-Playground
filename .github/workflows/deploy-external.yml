@@ -1,0 +1,42 @@
+name: Deploy external gallery
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          ARTIFACTORY_TOKEN: ${{ secrets.ARTIFACTORY_TOKEN }}
+
+      - name: Prune non-public prototypes
+        run: npm run prune-private
+
+      - name: Build (external)
+        run: npm run build:external
+        env:
+          # Deliberately NOT ${{ github.repository }} (which would resolve to
+          # this repo) — this build is published to a different repo/Pages
+          # site, so vite.config.ts's `base` needs that repo's own name.
+          GITHUB_REPOSITORY: israelgutierrez-jha/JH-Prototype-Playground-External
+
+      - name: Publish to external repo's gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          personal_token: ${{ secrets.EXTERNAL_REPO_TOKEN }}
+          external_repository: israelgutierrez-jha/JH-Prototype-Playground-External
+          publish_branch: gh-pages
+          publish_dir: ./dist
