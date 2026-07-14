@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
-import '@jack-henry/jh-elements/components/card/card.js'
+import { createRef, ref } from 'lit/directives/ref.js'
 import '@jack-henry/jh-elements/components/input/input.js'
 import '@jack-henry/jh-elements/components/select/select.js'
 import '@jack-henry/jh-elements/components/button/button.js'
@@ -14,18 +14,8 @@ export class ProtoOnboardingDialog extends LitElement {
       display: block;
     }
 
-    .backdrop {
-      position: fixed;
-      inset: 0;
-      background: var(--jh-color-overlay, rgba(0, 0, 0, 0.7));
-      z-index: var(--jh-z-index-positive-1000, 1000);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: var(--jh-dimension-400, 1rem);
-    }
-
-    .dialog {
+    dialog {
+      border: none;
       width: 480px;
       max-width: 100%;
       /* No max-height/overflow here on purpose: jh-select renders its
@@ -37,8 +27,15 @@ export class ProtoOnboardingDialog extends LitElement {
          This dialog's content is small and fixed, so it's safe to just let
          it size naturally instead of guarding against overflow that never
          legitimately happens. */
-      box-shadow: var(--jh-shadow-overlay);
+      padding: 0;
       border-radius: var(--jh-border-radius-200, 12px);
+      background: var(--jh-color-container-primary-enabled);
+      color: var(--jh-color-content-primary-enabled);
+      box-shadow: var(--jh-shadow-overlay);
+    }
+
+    dialog::backdrop {
+      background: var(--jh-color-overlay, rgba(0, 0, 0, 0.7));
     }
 
     .dialog-inner {
@@ -74,30 +71,29 @@ export class ProtoOnboardingDialog extends LitElement {
   @state() private _draftName = ''
   @state() private _draftTool: string = ''
 
-  private _onKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') this._dismiss()
-  }
-
-  connectedCallback() {
-    super.connectedCallback()
-    window.addEventListener('keydown', this._onKeyDown)
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback()
-    window.removeEventListener('keydown', this._onKeyDown)
-  }
+  private _dialogRef = createRef<HTMLDialogElement>()
 
   updated(changed: Map<string, unknown>) {
-    if (changed.has('open') && this.open) {
-      this._draftName = getDesignerName() ?? ''
-      this._draftTool = ''
+    if (changed.has('open')) {
+      if (this.open) {
+        this._draftName = getDesignerName() ?? ''
+        this._draftTool = ''
+        this._dialogRef.value?.showModal()
+      } else {
+        this._dialogRef.value?.close()
+      }
     }
   }
 
-  // Escape/backdrop/close-icon just hide the dialog for this session — it'll
-  // ask again next load. Only "Skip for now" permanently suppresses it.
+  // Escape just hides the dialog for this session — it'll ask again next
+  // load. Only "Skip for now" permanently suppresses it. Native <dialog>'s
+  // own 'close' event (fired by Escape or our .close() call below) is the
+  // single source of truth for telling the parent we closed.
   private _dismiss() {
+    this._dialogRef.value?.close()
+  }
+
+  private _onClose() {
     this.dispatchEvent(new CustomEvent('close', { bubbles: true, composed: true }))
   }
 
@@ -115,41 +111,35 @@ export class ProtoOnboardingDialog extends LitElement {
   }
 
   render() {
-    if (!this.open) return html``
-
     return html`
-      <div class="backdrop" @click=${this._dismiss}>
-        <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="proto-onboarding-heading" @click=${(e: Event) => e.stopPropagation()}>
-          <jh-card>
-            <div class="dialog-inner">
-              <h2 id="proto-onboarding-heading">Welcome to the JH Prototype Playground</h2>
-              <p>
-                Let's get a couple of quick questions out of the way now so you don't
-                have to answer them again later.
-              </p>
+      <dialog ${ref(this._dialogRef)} aria-labelledby="proto-onboarding-heading" @close=${this._onClose}>
+        <div class="dialog-inner">
+          <h2 id="proto-onboarding-heading">Welcome to the JH Prototype Playground</h2>
+          <p>
+            Let's get a couple of quick questions out of the way now so you don't
+            have to answer them again later.
+          </p>
 
-              <jh-input
-                label="Your name"
-                helper-text="e.g. John Doe"
-                .value=${this._draftName}
-                @jh-input=${(e: CustomEvent<{ value: string }>) => { this._draftName = e.detail.value }}
-              ></jh-input>
+          <jh-input
+            label="Your name"
+            helper-text="e.g. John Doe"
+            .value=${this._draftName}
+            @jh-input=${(e: CustomEvent<{ value: string }>) => { this._draftName = e.detail.value }}
+          ></jh-input>
 
-              <jh-select
-                label="AI tool"
-                helper-text="Which AI tool will you be using?"
-                .options=${AI_TOOL_OPTIONS.map(o => ({ value: o.tool, label: o.label }))}
-                @jh-change=${(e: Event) => { this._draftTool = (e.target as HTMLInputElement).value }}
-              ></jh-select>
+          <jh-select
+            label="AI tool"
+            helper-text="Which AI tool will you be using?"
+            .options=${AI_TOOL_OPTIONS.map(o => ({ value: o.tool, label: o.label }))}
+            @jh-change=${(e: Event) => { this._draftTool = (e.target as HTMLInputElement).value }}
+          ></jh-select>
 
-              <div class="dialog-footer">
-                <jh-button appearance="secondary" label="Skip for now" @click=${this._skip}></jh-button>
-                <jh-button appearance="primary" label="Save" @click=${this._save}></jh-button>
-              </div>
-            </div>
-          </jh-card>
+          <div class="dialog-footer">
+            <jh-button appearance="secondary" label="Skip for now" @click=${this._skip}></jh-button>
+            <jh-button appearance="primary" label="Save" @click=${this._save}></jh-button>
+          </div>
         </div>
-      </div>
+      </dialog>
     `
   }
 }

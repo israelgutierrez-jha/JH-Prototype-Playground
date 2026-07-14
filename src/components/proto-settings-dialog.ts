@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit'
 import { customElement, property, state, query } from 'lit/decorators.js'
-import '@jack-henry/jh-elements/components/card/card.js'
+import { createRef, ref } from 'lit/directives/ref.js'
 import '@jack-henry/jh-elements/components/input/input.js'
 import '@jack-henry/jh-elements/components/input-textarea/input-textarea.js'
 import '@jack-henry/jh-elements/components/input-password/input-password.js'
@@ -25,24 +25,21 @@ export class ProtoSettingsDialog extends LitElement {
       display: block;
     }
 
-    .backdrop {
-      position: fixed;
-      inset: 0;
-      background: var(--jh-color-overlay, rgba(0, 0, 0, 0.7));
-      z-index: var(--jh-z-index-positive-1000, 1000);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: var(--jh-dimension-400, 1rem);
-    }
-
-    .dialog {
+    dialog {
+      border: none;
       width: 480px;
       max-width: 100%;
       max-height: calc(100vh - var(--jh-dimension-1200, 3rem));
       overflow: auto;
-      box-shadow: var(--jh-shadow-overlay);
+      padding: 0;
       border-radius: var(--jh-border-radius-200, 12px);
+      background: var(--jh-color-container-primary-enabled);
+      color: var(--jh-color-content-primary-enabled);
+      box-shadow: var(--jh-shadow-overlay);
+    }
+
+    dialog::backdrop {
+      background: var(--jh-color-overlay, rgba(0, 0, 0, 0.7));
     }
 
     .dialog-inner {
@@ -125,35 +122,39 @@ export class ProtoSettingsDialog extends LitElement {
 
   @query('jh-input') private _titleInput?: HTMLElement
 
-  private _onKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') this._cancel()
-  }
-
-  connectedCallback() {
-    super.connectedCallback()
-    window.addEventListener('keydown', this._onKeyDown)
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback()
-    window.removeEventListener('keydown', this._onKeyDown)
-  }
+  private _dialogRef = createRef<HTMLDialogElement>()
 
   updated(changed: Map<string, unknown>) {
-    if (changed.has('open') && this.open) {
-      this._draftTitle = this.initialTitle
-      this._draftDescription = this.initialDescription
-      this._draftPublic = this.initialPublic
-      this._draftPassword = ''
-      this._clearPassword = false
-      this._error = ''
-      this._saving = false
-      requestAnimationFrame(() => this._titleInput?.focus())
+    if (changed.has('open')) {
+      if (this.open) {
+        this._draftTitle = this.initialTitle
+        this._draftDescription = this.initialDescription
+        this._draftPublic = this.initialPublic
+        this._draftPassword = ''
+        this._clearPassword = false
+        this._error = ''
+        this._saving = false
+        this._dialogRef.value?.showModal()
+        requestAnimationFrame(() => this._titleInput?.focus())
+      } else {
+        this._dialogRef.value?.close()
+      }
     }
   }
 
-  private _cancel() {
+  private _requestClose() {
     if (this._saving) return
+    this._dialogRef.value?.close()
+  }
+
+  // Escape fires 'cancel' before the dialog closes — block it while saving, same as the Cancel button.
+  private _onCancel(e: Event) {
+    if (this._saving) e.preventDefault()
+  }
+
+  // Fires once the dialog has actually closed (via .close() or an unblocked Escape) — the
+  // single source of truth for telling the parent so its `open` state stays in sync.
+  private _onClose() {
     this.dispatchEvent(new CustomEvent('close', { bubbles: true, composed: true }))
   }
 
@@ -208,83 +209,82 @@ export class ProtoSettingsDialog extends LitElement {
   }
 
   render() {
-    if (!this.open) return html``
-
     return html`
-      <div class="backdrop" @click=${this._cancel}>
-        <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="proto-settings-heading" @click=${(e: Event) => e.stopPropagation()}>
-          <jh-card>
-            <div class="dialog-inner">
-              <div class="dialog-header">
-                <h2 id="proto-settings-heading">Prototype settings</h2>
-                <button class="close-btn" aria-label="Close" @click=${this._cancel}>
-                  <jh-icon-xmark size="small"></jh-icon-xmark>
-                </button>
-              </div>
+      <dialog
+        ${ref(this._dialogRef)}
+        aria-labelledby="proto-settings-heading"
+        @cancel=${this._onCancel}
+        @close=${this._onClose}
+      >
+        <div class="dialog-inner">
+          <div class="dialog-header">
+            <h2 id="proto-settings-heading">Prototype settings</h2>
+            <button class="close-btn" aria-label="Close" @click=${this._requestClose}>
+              <jh-icon-xmark size="small"></jh-icon-xmark>
+            </button>
+          </div>
 
-              ${this._error
-                ? html`<jh-notification type="alert" appearance="negative">${this._error}</jh-notification>`
-                : ''}
+          ${this._error
+            ? html`<jh-notification type="alert" appearance="negative">${this._error}</jh-notification>`
+            : ''}
 
-              <jh-input
-                label="Title"
-                required
-                .value=${this._draftTitle}
-                @jh-input=${(e: CustomEvent<{ value: string }>) => { this._draftTitle = e.detail.value }}
-              ></jh-input>
+          <jh-input
+            label="Title"
+            required
+            .value=${this._draftTitle}
+            @jh-input=${(e: CustomEvent<{ value: string }>) => { this._draftTitle = e.detail.value }}
+          ></jh-input>
 
-              <jh-input-textarea
-                label="Description"
-                .value=${this._draftDescription}
-                @jh-input=${(e: CustomEvent<{ value: string }>) => { this._draftDescription = e.detail.value }}
-              ></jh-input-textarea>
+          <jh-input-textarea
+            label="Description"
+            .value=${this._draftDescription}
+            @jh-input=${(e: CustomEvent<{ value: string }>) => { this._draftDescription = e.detail.value }}
+          ></jh-input-textarea>
 
-              <jh-switch
-                label="Show in external gallery"
-                helper-text="Include this prototype in the restricted external gallery — a separate, stripped-down build for sharing outside the design team. Off by default; prototypes left off aren't included in that build at all."
-                ?checked=${this._draftPublic}
-                @jh-change=${(e: Event) => { this._draftPublic = (e.target as HTMLInputElement).checked }}
-              ></jh-switch>
+          <jh-switch
+            label="Show in external gallery"
+            helper-text="Include this prototype in the restricted external gallery — a separate, stripped-down build for sharing outside the design team. Off by default; prototypes left off aren't included in that build at all."
+            ?checked=${this._draftPublic}
+            @jh-change=${(e: Event) => { this._draftPublic = (e.target as HTMLInputElement).checked }}
+          ></jh-switch>
 
-              <jh-input-password
-                label="External access password"
-                helper-text=${this.initialHasPassword && !this._clearPassword
-                  ? 'A password is already set — leave blank to keep it.'
-                  : 'Optional — required to view this prototype in the external build.'}
-                .value=${this._draftPassword}
-                @jh-input=${(e: CustomEvent<{ value: string }>) => {
-                  this._draftPassword = e.detail.value
-                  this._clearPassword = false
-                }}
-              ></jh-input-password>
+          <jh-input-password
+            label="External access password"
+            helper-text=${this.initialHasPassword && !this._clearPassword
+              ? 'A password is already set — leave blank to keep it.'
+              : 'Optional — required to view this prototype in the external build.'}
+            .value=${this._draftPassword}
+            @jh-input=${(e: CustomEvent<{ value: string }>) => {
+              this._draftPassword = e.detail.value
+              this._clearPassword = false
+            }}
+          ></jh-input-password>
 
-              ${this.initialHasPassword && !this._clearPassword
-                ? html`
-                  <jh-button
-                    appearance="tertiary"
-                    size="small"
-                    label="Remove password"
-                    @click=${() => { this._clearPassword = true; this._draftPassword = '' }}
-                  ></jh-button>
-                `
-                : ''}
-              ${this._clearPassword
-                ? html`<jh-notification type="info" appearance="neutral">Password will be removed on save.</jh-notification>`
-                : ''}
+          ${this.initialHasPassword && !this._clearPassword
+            ? html`
+              <jh-button
+                appearance="tertiary"
+                size="small"
+                label="Remove password"
+                @click=${() => { this._clearPassword = true; this._draftPassword = '' }}
+              ></jh-button>
+            `
+            : ''}
+          ${this._clearPassword
+            ? html`<jh-notification type="info" appearance="neutral">Password will be removed on save.</jh-notification>`
+            : ''}
 
-              <div class="designer-field">
-                <span class="designer-label">Designer</span>
-                <span class="designer-value">${formatDesignerName(this.designerName || this.designer)}</span>
-              </div>
+          <div class="designer-field">
+            <span class="designer-label">Designer</span>
+            <span class="designer-value">${formatDesignerName(this.designerName || this.designer)}</span>
+          </div>
 
-              <div class="dialog-footer">
-                <jh-button appearance="secondary" label="Cancel" ?disabled=${this._saving} @click=${this._cancel}></jh-button>
-                <jh-button appearance="primary" label="Save" ?pending=${this._saving} @click=${this._save}></jh-button>
-              </div>
-            </div>
-          </jh-card>
+          <div class="dialog-footer">
+            <jh-button appearance="secondary" label="Cancel" ?disabled=${this._saving} @click=${this._requestClose}></jh-button>
+            <jh-button appearance="primary" label="Save" ?pending=${this._saving} @click=${this._save}></jh-button>
+          </div>
         </div>
-      </div>
+      </dialog>
     `
   }
 }
