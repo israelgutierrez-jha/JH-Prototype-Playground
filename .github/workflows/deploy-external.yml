@@ -28,10 +28,11 @@ jobs:
       - name: Build (external)
         run: npm run build:external
         env:
-          # Deliberately NOT ${{ github.repository }} (which would resolve to
-          # this repo) — this build is published to a different repo/Pages
-          # site, so vite.config.ts's `base` needs that repo's own name.
-          GITHUB_REPOSITORY: israelgutierrez-jha/JH-Prototype-Playground-External
+          # NOT GITHUB_REPOSITORY — that's a GitHub Actions default env var
+          # and overriding it via `env:` is silently ignored, so vite.config.ts
+          # reads this separate variable instead for this build's asset base
+          # path (this build publishes to a different repo/Pages site).
+          BASE_REPO_NAME: JH-Prototype-Playground-External
 
       - name: Publish to external repo's gh-pages branch
         uses: peaceiris/actions-gh-pages@v4

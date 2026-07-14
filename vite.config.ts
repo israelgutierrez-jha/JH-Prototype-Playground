@@ -3,9 +3,12 @@ import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import { execFileSync } from 'node:child_process'
 
-const repoName = process.env.GITHUB_REPOSITORY
-  ? process.env.GITHUB_REPOSITORY.split('/')[1]
-  : ''
+// GITHUB_REPOSITORY is a GitHub Actions default env var and cannot be
+// overridden via a workflow's `env:` block (GitHub silently ignores attempts
+// to do so) — so the external deploy workflow, which needs the *other*
+// repo's name for this build's asset base path, sets BASE_REPO_NAME instead.
+const repoName = process.env.BASE_REPO_NAME
+  || (process.env.GITHUB_REPOSITORY ? process.env.GITHUB_REPOSITORY.split('/')[1] : '')
 
 // Computed once, at build/dev-server-start time, and baked in via `define`
 // below — so the "Why this exists" page's repo-age stat refreshes itself on
