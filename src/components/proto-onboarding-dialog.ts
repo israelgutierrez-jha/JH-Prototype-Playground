@@ -1,9 +1,12 @@
 import { LitElement, html, css } from 'lit'
 import { customElement, property, state } from 'lit/decorators.js'
-import { createRef, ref } from 'lit/directives/ref.js'
 import '@jack-henry/jh-elements/components/input/input.js'
 import '@jack-henry/jh-elements/components/select/select.js'
 import '@jack-henry/jh-elements/components/button/button.js'
+// No jh-elements dialog exists yet; jha-dialog (legacy @banno/jha-wc) is the sanctioned fallback,
+// same pattern as jha-advanced-table for gaps in the current design system. It doesn't self-position
+// as a modal, so we own the backdrop overlay (see CLAUDE.md's jha-dialog reference).
+import '@banno/jha-wc/src/jha-dialog/jha-dialog.js'
 import { AI_TOOL_OPTIONS, type AiTool, setAiTool } from '../utils/ai-deeplink.js'
 import { getDesignerName, setDesignerName, setOnboarded } from '../utils/designer-profile.js'
 
@@ -14,42 +17,25 @@ export class ProtoOnboardingDialog extends LitElement {
       display: block;
     }
 
-    dialog {
-      border: none;
-      width: 480px;
-      max-width: 100%;
-      /* No max-height/overflow here on purpose: jh-select renders its
-         (closed, invisible) dropdown menu as position:absolute with
-         visibility:hidden rather than display:none, so it still occupies
-         layout space below the visible content. With overflow:auto, that
-         phantom space got counted as scrollable content, producing a
-         scrollbar and clipped view even though nothing visible needed one.
-         This dialog's content is small and fixed, so it's safe to just let
-         it size naturally instead of guarding against overflow that never
-         legitimately happens. */
-      padding: 0;
-      border-radius: var(--jh-border-radius-200, 12px);
-      background: var(--jh-color-container-primary-enabled);
-      color: var(--jh-color-content-primary-enabled);
-      box-shadow: var(--jh-shadow-overlay);
-    }
-
-    dialog::backdrop {
-      background: var(--jh-color-overlay, rgba(0, 0, 0, 0.7));
-    }
-
-    .dialog-inner {
+    .dialog-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: var(--jh-z-index-positive-1000, 1000);
       display: flex;
-      flex-direction: column;
-      gap: var(--jh-dimension-400, 1rem);
+      align-items: center;
+      justify-content: center;
       padding: var(--jh-dimension-400, 1rem);
     }
 
-    h2 {
-      font-size: var(--jh-font-size-500, 1.25rem);
-      font-weight: var(--jh-font-weight-semibold, 600);
-      color: var(--jh-color-content-primary-enabled);
-      margin: 0;
+    jha-dialog {
+      --jha-dialog-width: 480px;
+    }
+
+    .dialog-content {
+      display: flex;
+      flex-direction: column;
+      gap: var(--jh-dimension-400, 1rem);
     }
 
     p {
@@ -59,7 +45,7 @@ export class ProtoOnboardingDialog extends LitElement {
       margin: 0;
     }
 
-    .dialog-footer {
+    footer {
       display: flex;
       justify-content: flex-end;
       gap: var(--jh-dimension-300, 0.75rem);
@@ -71,29 +57,30 @@ export class ProtoOnboardingDialog extends LitElement {
   @state() private _draftName = ''
   @state() private _draftTool: string = ''
 
-  private _dialogRef = createRef<HTMLDialogElement>()
+  private _onKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') this._dismiss()
+  }
+
+  connectedCallback() {
+    super.connectedCallback()
+    window.addEventListener('keydown', this._onKeyDown)
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback()
+    window.removeEventListener('keydown', this._onKeyDown)
+  }
 
   updated(changed: Map<string, unknown>) {
-    if (changed.has('open')) {
-      if (this.open) {
-        this._draftName = getDesignerName() ?? ''
-        this._draftTool = ''
-        this._dialogRef.value?.showModal()
-      } else {
-        this._dialogRef.value?.close()
-      }
+    if (changed.has('open') && this.open) {
+      this._draftName = getDesignerName() ?? ''
+      this._draftTool = ''
     }
   }
 
-  // Escape just hides the dialog for this session — it'll ask again next
-  // load. Only "Skip for now" permanently suppresses it. Native <dialog>'s
-  // own 'close' event (fired by Escape or our .close() call below) is the
-  // single source of truth for telling the parent we closed.
+  // Escape/close-icon just hide the dialog for this session — it'll ask
+  // again next load. Only "Skip for now" permanently suppresses it.
   private _dismiss() {
-    this._dialogRef.value?.close()
-  }
-
-  private _onClose() {
     this.dispatchEvent(new CustomEvent('close', { bubbles: true, composed: true }))
   }
 
@@ -111,35 +98,43 @@ export class ProtoOnboardingDialog extends LitElement {
   }
 
   render() {
+    if (!this.open) return html``
+
     return html`
-      <dialog ${ref(this._dialogRef)} aria-labelledby="proto-onboarding-heading" @close=${this._onClose}>
-        <div class="dialog-inner">
-          <h2 id="proto-onboarding-heading">Welcome to the JH Prototype Playground</h2>
-          <p>
-            Let's get a couple of quick questions out of the way now so you don't
-            have to answer them again later.
-          </p>
+      <div class="dialog-overlay">
+        <jha-dialog heading="Welcome to the JH Prototype Playground" confirm-label="" hide-confirm @cancel=${this._dismiss}>
+          <div slot="dialog-content" class="dialog-content">
+            <p>
+              Let's get a couple of quick questions out of the way now so you don't
+              have to answer them again later.
+            </p>
 
-          <jh-input
-            label="Your name"
-            helper-text="e.g. John Doe"
-            .value=${this._draftName}
-            @jh-input=${(e: CustomEvent<{ value: string }>) => { this._draftName = e.detail.value }}
-          ></jh-input>
+            <jh-input
+              label="Your name"
+              helper-text="e.g. John Doe"
+              .value=${this._draftName}
+              @jh-input=${(e: CustomEvent<{ value: string }>) => { this._draftName = e.detail.value }}
+            ></jh-input>
 
-          <jh-select
-            label="AI tool"
-            helper-text="Which AI tool will you be using?"
-            .options=${AI_TOOL_OPTIONS.map(o => ({ value: o.tool, label: o.label }))}
-            @jh-change=${(e: Event) => { this._draftTool = (e.target as HTMLInputElement).value }}
-          ></jh-select>
+            <!-- jh-select always renders its (closed, invisible) dropdown as an absolutely
+                 positioned box, which jha-dialog's own hardcoded article overflow:auto style
+                 picks up as scrollable content — producing a thin permanent scrollbar here.
+                 Harmless (the real dropdown still opens and works) and not fixable from
+                 outside either component's shadow DOM, so left as-is. -->
+            <jh-select
+              label="AI tool"
+              helper-text="Which AI tool will you be using?"
+              .options=${AI_TOOL_OPTIONS.map(o => ({ value: o.tool, label: o.label }))}
+              @jh-change=${(e: Event) => { this._draftTool = (e.target as HTMLInputElement).value }}
+            ></jh-select>
 
-          <div class="dialog-footer">
-            <jh-button appearance="secondary" label="Skip for now" @click=${this._skip}></jh-button>
-            <jh-button appearance="primary" label="Save" @click=${this._save}></jh-button>
+            <footer>
+              <jh-button appearance="secondary" label="Skip for now" @click=${this._skip}></jh-button>
+              <jh-button appearance="primary" label="Save" @click=${this._save}></jh-button>
+            </footer>
           </div>
-        </div>
-      </dialog>
+        </jha-dialog>
+      </div>
     `
   }
 }

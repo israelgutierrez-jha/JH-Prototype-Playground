@@ -1,6 +1,5 @@
 import { LitElement, html, css } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
-import { createRef, ref } from 'lit/directives/ref.js'
 import { pageHeaderStyles } from '../styles/page-header.js'
 import type { PrototypeMeta } from './proto-card.js'
 import { EXTERNAL_LINKS, type ExternalPrototypeLink as ExternalEntry } from '../data/external-links.js'
@@ -13,6 +12,10 @@ import '@jack-henry/jh-elements/components/input/input.js'
 import '@jack-henry/jh-elements/components/input-url/input-url.js'
 import '@jack-henry/jh-elements/components/input-textarea/input-textarea.js'
 import '@jack-henry/jh-icons/icons-wc/icon-arrow-up-right-from-square.js'
+// No jh-elements dialog exists yet; jha-dialog (legacy @banno/jha-wc) is the sanctioned fallback,
+// same pattern as jha-advanced-table for gaps in the current design system. It doesn't self-position
+// as a modal, so we own the backdrop overlay (see CLAUDE.md's jha-dialog reference).
+import '@banno/jha-wc/src/jha-dialog/jha-dialog.js'
 import { runAiPrompt } from '../utils/ai-deeplink.js'
 import { designerProfileReady, formatDesignerName, getDesignerName } from '../utils/designer-profile.js'
 
@@ -178,24 +181,25 @@ export class ProtoGallery extends LitElement {
       color: var(--jh-color-content-primary-enabled);
     }
 
-    dialog {
-      border: none;
-      border-radius: var(--jh-border-radius-300, 12px);
-      padding: var(--jh-dimension-600, 3rem);
-      width: min(92vw, 460px);
-      background: var(--jh-color-container-primary-enabled);
-      color: var(--jh-color-content-primary-enabled);
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-    }
-
-    dialog::backdrop {
+    .dialog-overlay {
+      position: fixed;
+      inset: 0;
       background: rgba(0, 0, 0, 0.5);
+      z-index: var(--jh-z-index-positive-1000, 1000);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--jh-dimension-400, 1rem);
     }
 
-    .dialog-title {
-      margin: 0 0 var(--jh-dimension-400, 2rem);
-      font-size: var(--jh-font-size-500, 1.5rem);
-      font-weight: var(--jh-font-weight-semibold, 600);
+    jha-dialog {
+      --jha-dialog-width: 460px;
+    }
+
+    .dialog-content {
+      display: flex;
+      flex-direction: column;
+      gap: var(--jh-dimension-100, 0.5rem);
     }
 
     .field {
@@ -210,11 +214,11 @@ export class ProtoGallery extends LitElement {
       width: 100%;
     }
 
-    .dialog-actions {
+    footer {
       display: flex;
       justify-content: flex-end;
       gap: var(--jh-dimension-200, 1rem);
-      margin-top: var(--jh-dimension-500, 2.5rem);
+      margin-top: var(--jh-dimension-300, 1.5rem);
     }
   `,
   ]
@@ -223,6 +227,7 @@ export class ProtoGallery extends LitElement {
   @state() private _copied = false
   @state() private _actionOutcome: 'opened' | 'copied' = 'copied'
   @state() private _external: ExternalEntry[] = EXTERNAL_LINKS
+  @state() private _dialogOpen = false
   @state() private _fUrl = ''
   @state() private _fTitle = ''
   @state() private _fDesigner = ''
@@ -232,7 +237,20 @@ export class ProtoGallery extends LitElement {
   @state() private _removeError = ''
 
   private _all = loadPrototypes()
-  private _dialogRef = createRef<HTMLDialogElement>()
+
+  private _onKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Escape' && this._dialogOpen) this._closeDialog()
+  }
+
+  connectedCallback() {
+    super.connectedCallback()
+    window.addEventListener('keydown', this._onKeyDown)
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback()
+    window.removeEventListener('keydown', this._onKeyDown)
+  }
 
   private async _copyNewPrototype() {
     try {
@@ -298,15 +316,11 @@ export class ProtoGallery extends LitElement {
     this._fDesc = ''
     this._linkError = ''
     this._savingLink = false
-    const dialog = this._dialogRef.value
-    dialog
-      ?.querySelectorAll('jh-input:not(.designer-field-input), jh-input-url, jh-input-textarea')
-      .forEach(el => { (el as HTMLInputElement).value = '' })
-    dialog?.showModal()
+    this._dialogOpen = true
   }
 
   private _closeDialog() {
-    this._dialogRef.value?.close()
+    this._dialogOpen = false
   }
 
   private async _createExternal() {
@@ -453,63 +467,67 @@ export class ProtoGallery extends LitElement {
         `)}
       </main>
 
-      <dialog ${ref(this._dialogRef)} @cancel=${this._closeDialog}>
-        <h2 class="dialog-title">Link External Prototype</h2>
+      ${this._dialogOpen ? html`
+        <div class="dialog-overlay">
+          <jha-dialog heading="Link External Prototype" confirm-label="" hide-confirm @cancel=${this._closeDialog}>
+            <div slot="dialog-content" class="dialog-content">
+              ${this._linkError ? html`
+                <div class="field">
+                  <jh-notification type="alert" appearance="negative">${this._linkError}</jh-notification>
+                </div>
+              ` : ''}
 
-        ${this._linkError ? html`
-          <div class="field">
-            <jh-notification type="alert" appearance="negative">${this._linkError}</jh-notification>
-          </div>
-        ` : ''}
+              <div class="field">
+                <jh-input-url
+                  label="URL"
+                  required
+                  helper-text="e.g. a Figma prototype or v0 link"
+                  @jh-input=${(e: CustomEvent) => { this._fUrl = (e.target as HTMLInputElement).value }}
+                  @jh-change=${(e: CustomEvent) => { this._fUrl = (e.target as HTMLInputElement).value }}
+                ></jh-input-url>
+              </div>
 
-        <div class="field">
-          <jh-input-url
-            label="URL"
-            required
-            helper-text="e.g. a Figma prototype or v0 link"
-            @jh-input=${(e: CustomEvent) => { this._fUrl = (e.target as HTMLInputElement).value }}
-            @jh-change=${(e: CustomEvent) => { this._fUrl = (e.target as HTMLInputElement).value }}
-          ></jh-input-url>
+              <div class="field">
+                <jh-input
+                  label="Title"
+                  @jh-input=${(e: CustomEvent) => { this._fTitle = (e.target as HTMLInputElement).value }}
+                  @jh-change=${(e: CustomEvent) => { this._fTitle = (e.target as HTMLInputElement).value }}
+                ></jh-input>
+              </div>
+
+              <div class="field">
+                <jh-input
+                  class="designer-field-input"
+                  label="Your name"
+                  .value=${this._fDesigner}
+                  @jh-input=${(e: CustomEvent) => { this._fDesigner = (e.target as HTMLInputElement).value }}
+                  @jh-change=${(e: CustomEvent) => { this._fDesigner = (e.target as HTMLInputElement).value }}
+                ></jh-input>
+              </div>
+
+              <div class="field">
+                <jh-input-textarea
+                  label="Description"
+                  rows="3"
+                  @jh-input=${(e: CustomEvent) => { this._fDesc = (e.target as HTMLInputElement).value }}
+                  @jh-change=${(e: CustomEvent) => { this._fDesc = (e.target as HTMLInputElement).value }}
+                ></jh-input-textarea>
+              </div>
+
+              <footer>
+                <jh-button appearance="secondary" label="Cancel" ?disabled=${this._savingLink} @click=${this._closeDialog}></jh-button>
+                <jh-button
+                  appearance="primary"
+                  label="Create"
+                  ?disabled=${!this._fUrl.trim()}
+                  ?pending=${this._savingLink}
+                  @click=${this._createExternal}
+                ></jh-button>
+              </footer>
+            </div>
+          </jha-dialog>
         </div>
-
-        <div class="field">
-          <jh-input
-            label="Title"
-            @jh-input=${(e: CustomEvent) => { this._fTitle = (e.target as HTMLInputElement).value }}
-            @jh-change=${(e: CustomEvent) => { this._fTitle = (e.target as HTMLInputElement).value }}
-          ></jh-input>
-        </div>
-
-        <div class="field">
-          <jh-input
-            class="designer-field-input"
-            label="Your name"
-            .value=${this._fDesigner}
-            @jh-input=${(e: CustomEvent) => { this._fDesigner = (e.target as HTMLInputElement).value }}
-            @jh-change=${(e: CustomEvent) => { this._fDesigner = (e.target as HTMLInputElement).value }}
-          ></jh-input>
-        </div>
-
-        <div class="field">
-          <jh-input-textarea
-            label="Description"
-            rows="3"
-            @jh-input=${(e: CustomEvent) => { this._fDesc = (e.target as HTMLInputElement).value }}
-            @jh-change=${(e: CustomEvent) => { this._fDesc = (e.target as HTMLInputElement).value }}
-          ></jh-input-textarea>
-        </div>
-
-        <div class="dialog-actions">
-          <jh-button appearance="secondary" label="Cancel" ?disabled=${this._savingLink} @click=${this._closeDialog}></jh-button>
-          <jh-button
-            appearance="primary"
-            label="Create"
-            ?disabled=${!this._fUrl.trim()}
-            ?pending=${this._savingLink}
-            @click=${this._createExternal}
-          ></jh-button>
-        </div>
-      </dialog>
+      ` : ''}
     `
   }
 }

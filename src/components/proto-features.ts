@@ -1,6 +1,5 @@
 import { LitElement, html, css } from 'lit'
 import { customElement, state } from 'lit/decorators.js'
-import { createRef, ref } from 'lit/directives/ref.js'
 import '@jack-henry/jh-elements/components/card/card.js'
 import '@jack-henry/jh-elements/components/tag/tag.js'
 import '@jack-henry/jh-elements/components/tag-group/tag-group.js'
@@ -15,6 +14,10 @@ import '@jack-henry/jh-icons/icons-wc/icon-chevron-left-small.js'
 import '@jack-henry/jh-icons/icons-wc/icon-chevron-right-small.js'
 import { designerProfileReady, formatDesignerName, getDesignerName } from '../utils/designer-profile.js'
 import '@jack-henry/jh-icons/icons-wc/icon-ellipsis.js'
+// No jh-elements dialog exists yet; jha-dialog (legacy @banno/jha-wc) is the sanctioned fallback,
+// same pattern as jha-advanced-table for gaps in the current design system. It doesn't self-position
+// as a modal, so we own the backdrop overlay (see CLAUDE.md's jha-dialog reference).
+import '@banno/jha-wc/src/jha-dialog/jha-dialog.js'
 import { FEATURE_COLUMNS, FEATURE_CARDS, type FeatureCard, type FeatureColumnId } from '../data/features.js'
 import { pageHeaderStyles } from '../styles/page-header.js'
 
@@ -292,24 +295,25 @@ export class ProtoFeatures extends LitElement {
       z-index: var(--jh-z-index-positive-1000, 1000);
     }
 
-    dialog {
-      border: none;
-      border-radius: var(--jh-border-radius-300, 12px);
-      padding: var(--jh-dimension-600, 3rem);
-      width: min(92vw, 460px);
-      background: var(--jh-color-container-primary-enabled);
-      color: var(--jh-color-content-primary-enabled);
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-    }
-
-    dialog::backdrop {
+    .dialog-overlay {
+      position: fixed;
+      inset: 0;
       background: rgba(0, 0, 0, 0.5);
+      z-index: var(--jh-z-index-positive-1000, 1000);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--jh-dimension-400, 1rem);
     }
 
-    .dialog-title {
-      margin: 0 0 var(--jh-dimension-400, 2rem);
-      font-size: var(--jh-font-size-500, 1.5rem);
-      font-weight: var(--jh-font-weight-semibold, 600);
+    jha-dialog {
+      --jha-dialog-width: 460px;
+    }
+
+    .dialog-content {
+      display: flex;
+      flex-direction: column;
+      gap: var(--jh-dimension-100, 0.5rem);
     }
 
     .field {
@@ -323,11 +327,11 @@ export class ProtoFeatures extends LitElement {
       width: 100%;
     }
 
-    .dialog-actions {
+    footer {
       display: flex;
       justify-content: flex-end;
       gap: var(--jh-dimension-200, 1rem);
-      margin-top: var(--jh-dimension-500, 2.5rem);
+      margin-top: var(--jh-dimension-300, 1.5rem);
     }
   `,
   ]
@@ -344,6 +348,7 @@ export class ProtoFeatures extends LitElement {
 
   // null while creating a new card; the card's id while editing an existing one.
   @state() private _editingId: string | null = null
+  @state() private _dialogOpen = false
   @state() private _fTitle = ''
   @state() private _fDescription = ''
   @state() private _fSubmittedBy = ''
@@ -351,8 +356,6 @@ export class ProtoFeatures extends LitElement {
   @state() private _fTags = ''
   @state() private _saving = false
   @state() private _formError = ''
-
-  private _dialogRef = createRef<HTMLDialogElement>()
 
   private _closeMenu = () => {
     this._openMenuId = null
@@ -364,7 +367,10 @@ export class ProtoFeatures extends LitElement {
   }
 
   private _onWindowKeydown = (e: KeyboardEvent) => {
-    if (e.key === 'Escape' && this._openMenuId) this._closeMenu()
+    if (e.key === 'Escape') {
+      if (this._openMenuId) this._closeMenu()
+      if (this._dialogOpen) this._closeDialog()
+    }
   }
 
   // Scroll events don't bubble, so a capture-phase listener on window is the
@@ -423,7 +429,7 @@ export class ProtoFeatures extends LitElement {
     this._fTags = ''
     this._formError = ''
     this._saving = false
-    this._dialogRef.value?.showModal()
+    this._dialogOpen = true
   }
 
   private _openEditDialog(card: FeatureCard) {
@@ -435,11 +441,11 @@ export class ProtoFeatures extends LitElement {
     this._fTags = card.tags.join(', ')
     this._formError = ''
     this._saving = false
-    this._dialogRef.value?.showModal()
+    this._dialogOpen = true
   }
 
   private _closeDialog() {
-    this._dialogRef.value?.close()
+    this._dialogOpen = false
   }
 
   private async _saveDialog() {
@@ -654,78 +660,87 @@ export class ProtoFeatures extends LitElement {
         `
       })() : ''}
 
-      <dialog ${ref(this._dialogRef)} @cancel=${this._closeDialog}>
-        <h2 class="dialog-title">${this._editingId ? 'Edit Feedback' : 'Submit Feedback'}</h2>
+      ${this._dialogOpen ? html`
+        <div class="dialog-overlay">
+          <jha-dialog
+            .heading=${this._editingId ? 'Edit Feedback' : 'Submit Feedback'}
+            confirm-label=""
+            hide-confirm
+            @cancel=${this._closeDialog}
+          >
+            <div slot="dialog-content" class="dialog-content">
+              ${this._formError ? html`
+                <div class="field">
+                  <jh-notification type="alert" appearance="negative">${this._formError}</jh-notification>
+                </div>
+              ` : ''}
 
-        ${this._formError ? html`
-          <div class="field">
-            <jh-notification type="alert" appearance="negative">${this._formError}</jh-notification>
-          </div>
-        ` : ''}
+              <div class="field">
+                <jh-input
+                  label="Title"
+                  required
+                  .value=${this._fTitle}
+                  @jh-input=${(e: CustomEvent) => { this._fTitle = (e.target as HTMLInputElement).value }}
+                  @jh-change=${(e: CustomEvent) => { this._fTitle = (e.target as HTMLInputElement).value }}
+                ></jh-input>
+              </div>
 
-        <div class="field">
-          <jh-input
-            label="Title"
-            required
-            .value=${this._fTitle}
-            @jh-input=${(e: CustomEvent) => { this._fTitle = (e.target as HTMLInputElement).value }}
-            @jh-change=${(e: CustomEvent) => { this._fTitle = (e.target as HTMLInputElement).value }}
-          ></jh-input>
+              <div class="field">
+                <jh-input-textarea
+                  label="Description"
+                  rows="3"
+                  .value=${this._fDescription}
+                  @jh-input=${(e: CustomEvent) => { this._fDescription = (e.target as HTMLInputElement).value }}
+                  @jh-change=${(e: CustomEvent) => { this._fDescription = (e.target as HTMLInputElement).value }}
+                ></jh-input-textarea>
+              </div>
+
+              <div class="field">
+                <jh-input
+                  label="Suggested by"
+                  helper-text="Who's asking for this"
+                  .value=${this._fSubmittedBy}
+                  @jh-input=${(e: CustomEvent) => { this._fSubmittedBy = (e.target as HTMLInputElement).value }}
+                  @jh-change=${(e: CustomEvent) => { this._fSubmittedBy = (e.target as HTMLInputElement).value }}
+                ></jh-input>
+              </div>
+
+              ${this._editingId ? html`
+                <div class="field">
+                  <jh-input
+                    label="Assigned to"
+                    helper-text="Add your name here if you're picking this up"
+                    .value=${this._fAssignedTo}
+                    @jh-input=${(e: CustomEvent) => { this._fAssignedTo = (e.target as HTMLInputElement).value }}
+                    @jh-change=${(e: CustomEvent) => { this._fAssignedTo = (e.target as HTMLInputElement).value }}
+                  ></jh-input>
+                </div>
+              ` : ''}
+
+              <div class="field">
+                <jh-input
+                  label="Tags"
+                  helper-text="Comma-separated, e.g. workflow, docs"
+                  .value=${this._fTags}
+                  @jh-input=${(e: CustomEvent) => { this._fTags = (e.target as HTMLInputElement).value }}
+                  @jh-change=${(e: CustomEvent) => { this._fTags = (e.target as HTMLInputElement).value }}
+                ></jh-input>
+              </div>
+
+              <footer>
+                <jh-button appearance="secondary" label="Cancel" ?disabled=${this._saving} @click=${this._closeDialog}></jh-button>
+                <jh-button
+                  appearance="primary"
+                  label=${this._editingId ? 'Save' : 'Submit'}
+                  ?disabled=${!this._fTitle.trim()}
+                  ?pending=${this._saving}
+                  @click=${this._saveDialog}
+                ></jh-button>
+              </footer>
+            </div>
+          </jha-dialog>
         </div>
-
-        <div class="field">
-          <jh-input-textarea
-            label="Description"
-            rows="3"
-            .value=${this._fDescription}
-            @jh-input=${(e: CustomEvent) => { this._fDescription = (e.target as HTMLInputElement).value }}
-            @jh-change=${(e: CustomEvent) => { this._fDescription = (e.target as HTMLInputElement).value }}
-          ></jh-input-textarea>
-        </div>
-
-        <div class="field">
-          <jh-input
-            label="Suggested by"
-            helper-text="Who's asking for this"
-            .value=${this._fSubmittedBy}
-            @jh-input=${(e: CustomEvent) => { this._fSubmittedBy = (e.target as HTMLInputElement).value }}
-            @jh-change=${(e: CustomEvent) => { this._fSubmittedBy = (e.target as HTMLInputElement).value }}
-          ></jh-input>
-        </div>
-
-        ${this._editingId ? html`
-          <div class="field">
-            <jh-input
-              label="Assigned to"
-              helper-text="Add your name here if you're picking this up"
-              .value=${this._fAssignedTo}
-              @jh-input=${(e: CustomEvent) => { this._fAssignedTo = (e.target as HTMLInputElement).value }}
-              @jh-change=${(e: CustomEvent) => { this._fAssignedTo = (e.target as HTMLInputElement).value }}
-            ></jh-input>
-          </div>
-        ` : ''}
-
-        <div class="field">
-          <jh-input
-            label="Tags"
-            helper-text="Comma-separated, e.g. workflow, docs"
-            .value=${this._fTags}
-            @jh-input=${(e: CustomEvent) => { this._fTags = (e.target as HTMLInputElement).value }}
-            @jh-change=${(e: CustomEvent) => { this._fTags = (e.target as HTMLInputElement).value }}
-          ></jh-input>
-        </div>
-
-        <div class="dialog-actions">
-          <jh-button appearance="secondary" label="Cancel" ?disabled=${this._saving} @click=${this._closeDialog}></jh-button>
-          <jh-button
-            appearance="primary"
-            label=${this._editingId ? 'Save' : 'Submit'}
-            ?disabled=${!this._fTitle.trim()}
-            ?pending=${this._saving}
-            @click=${this._saveDialog}
-          ></jh-button>
-        </div>
-      </dialog>
+      ` : ''}
     `
   }
 }
