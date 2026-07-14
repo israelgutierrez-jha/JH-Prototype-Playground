@@ -48,8 +48,8 @@ export class ProtoSettingsDialog extends LitElement {
     .dialog-inner {
       display: flex;
       flex-direction: column;
-      gap: var(--jh-dimension-400, 1rem);
-      padding: var(--jh-dimension-400, 1rem);
+      gap: var(--jh-dimension-500, 1.25rem);
+      padding: var(--jh-dimension-600, 1.5rem);
     }
 
     .dialog-header {
@@ -240,8 +240,8 @@ export class ProtoSettingsDialog extends LitElement {
               ></jh-input-textarea>
 
               <jh-switch
-                label="Show in external (CU) gallery"
-                helper-text="Only prototypes marked here are included in the restricted external build shared with credit unions/stakeholders."
+                label="Show in external gallery"
+                helper-text="Include this prototype in the restricted external gallery — a separate, stripped-down build for sharing outside the design team. Off by default; prototypes left off aren't included in that build at all."
                 ?checked=${this._draftPublic}
                 @jh-change=${(e: Event) => { this._draftPublic = (e.target as HTMLInputElement).checked }}
               ></jh-switch>

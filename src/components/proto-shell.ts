@@ -210,6 +210,7 @@ export class ProtoShell extends LitElement {
           </div>
         ` : IS_EXTERNAL_BUILD ? html`
           <proto-password-gate
+            class="proto-mount"
             .passwordHash=${this._protoMeta?.passwordHash ?? ''}
             unlockKey=${`proto:${this.designer}/${this.name}`}
             label="This prototype requires a password to view."

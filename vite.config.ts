@@ -555,76 +555,6 @@ function designerProfileWriterPlugin(): Plugin {
   }
 }
 
-const EXTERNAL_ACCESS_PATH = 'src/config/external-access.ts'
-
-function upsertExternalAccessHash(source: string, hash: string): string {
-  const serialized = JSON.stringify(hash)
-  const pattern = /(galleryPasswordHash:\s*)(['"`])(?:\\.|(?!\2).)*\2/s
-  if (!pattern.test(source)) {
-    throw new Error('Could not find galleryPasswordHash field to update')
-  }
-  return source.replace(pattern, `$1${serialized}`)
-}
-
-// Dev-only endpoint for the global Settings page's "External gallery
-// password" field — same read-modify-write-to-real-file pattern as
-// proto-meta-writer above, just for the one repo-wide config in
-// src/config/external-access.ts instead of a per-prototype meta.ts.
-function externalAccessWriterPlugin(): Plugin {
-  return {
-    name: 'proto-external-access-writer',
-    apply: 'serve',
-    configureServer(server) {
-      server.middlewares.use('/__proto-api/external-access', async (req, res) => {
-        res.setHeader('Content-Type', 'application/json')
-
-        try {
-          const filePath = path.resolve(server.config.root, EXTERNAL_ACCESS_PATH)
-
-          if (req.method === 'GET') {
-            let hasPassword = false
-            try {
-              const source = await fs.readFile(filePath, 'utf-8')
-              const match = source.match(/galleryPasswordHash:\s*(['"`])((?:\\.|(?!\1).)*)\1/s)
-              hasPassword = !!match && match[2].length > 0
-            } catch {
-              // File missing entirely — treat as no password set.
-            }
-            res.statusCode = 200
-            res.end(JSON.stringify({ hasPassword }))
-            return
-          }
-
-          if (req.method === 'POST') {
-            const body = JSON.parse(await readRequestBody(req))
-            const passwordHash = typeof body?.passwordHash === 'string' ? body.passwordHash : undefined
-
-            if (passwordHash === undefined) throw new Error('passwordHash is required')
-            if (passwordHash !== '' && !/^[a-f0-9]{64}$/.test(passwordHash)) {
-              throw new Error('passwordHash must be empty or a hex SHA-256 digest')
-            }
-
-            await withFileLock(filePath, async () => {
-              const source = await fs.readFile(filePath, 'utf-8')
-              await fs.writeFile(filePath, upsertExternalAccessHash(source, passwordHash), 'utf-8')
-            })
-
-            res.statusCode = 200
-            res.end(JSON.stringify({ ok: true, hasPassword: passwordHash.length > 0 }))
-            return
-          }
-
-          res.statusCode = 405
-          res.end(JSON.stringify({ ok: false, error: 'Method not allowed' }))
-        } catch (err) {
-          res.statusCode = 400
-          res.end(JSON.stringify({ ok: false, error: err instanceof Error ? err.message : String(err) }))
-        }
-      })
-    },
-  }
-}
-
 export default defineConfig({
   base: repoName ? `/${repoName}/` : '/',
   define: {
@@ -636,7 +566,6 @@ export default defineConfig({
     featuresWriterPlugin(),
     updateStatusPlugin(),
     designerProfileWriterPlugin(),
-    externalAccessWriterPlugin(),
   ],
   server: {
     // Keep this in sync with DEV_PORT in scripts/dev-update.js. strictPort

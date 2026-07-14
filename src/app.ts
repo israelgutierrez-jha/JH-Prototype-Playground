@@ -10,8 +10,6 @@ import './components/proto-inspector.js'
 import './components/proto-features.js'
 import './components/proto-features-vision.js'
 import './components/proto-onboarding-dialog.js'
-import './components/proto-password-gate.js'
-import { externalAccessConfig } from './config/external-access.js'
 import '@jkhy/platform-tools/components/jh-platform-nav.js'
 import '@jkhy/platform-tools/components/jh-platform-header.js'
 import '@jack-henry/jh-elements/components/notification/notification.js'
@@ -145,8 +143,7 @@ export class ProtoApp extends LitElement {
     proto-templates.gallery-scroll,
     proto-template-shell.gallery-scroll,
     proto-features.gallery-scroll,
-    proto-features-vision.gallery-scroll,
-    proto-password-gate.gallery-scroll {
+    proto-features-vision.gallery-scroll {
       flex: 1;
       overflow: auto;
     }
@@ -339,17 +336,6 @@ export class ProtoApp extends LitElement {
                 ? html`<proto-resources class="gallery-scroll" .page=${resourcesPage}></proto-resources>`
                 : !IS_EXTERNAL_BUILD && isTemplatesList
                 ? html`<proto-templates class="gallery-scroll"></proto-templates>`
-                : IS_EXTERNAL_BUILD
-                ? html`
-                  <proto-password-gate
-                    class="gallery-scroll"
-                    .passwordHash=${externalAccessConfig.galleryPasswordHash}
-                    unlockKey="external-gallery"
-                    label="Enter the password provided to you to view this gallery."
-                  >
-                    <proto-gallery></proto-gallery>
-                  </proto-password-gate>
-                `
                 : html`<proto-gallery class="gallery-scroll"></proto-gallery>`
               }
             `

@@ -14,7 +14,9 @@ import { sha256Hex } from '../utils/password-hash.js'
 export class ProtoPasswordGate extends LitElement {
   static styles = css`
     :host {
-      display: block;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
     }
 
     .wrap {
