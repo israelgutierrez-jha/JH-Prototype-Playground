@@ -208,7 +208,7 @@ export class ProtoShell extends LitElement {
           <div class="error-wrap">
             <jh-notification type="alert" appearance="negative">${this._error}</jh-notification>
           </div>
-        ` : html`
+        ` : IS_EXTERNAL_BUILD ? html`
           <proto-password-gate
             .passwordHash=${this._protoMeta?.passwordHash ?? ''}
             unlockKey=${`proto:${this.designer}/${this.name}`}
@@ -216,6 +216,8 @@ export class ProtoShell extends LitElement {
           >
             <div class="proto-mount" ${ref(this._containerRef)}></div>
           </proto-password-gate>
+        ` : html`
+          <div class="proto-mount" ${ref(this._containerRef)}></div>
         `}
       </div>
 
