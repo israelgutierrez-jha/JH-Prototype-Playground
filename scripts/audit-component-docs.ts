@@ -31,7 +31,7 @@ const SUBPART_TAGS = new Set(['jh-table-cell'])
  * manifest entry — their API is hand-authored in the doc itself, so they're
  * expected to be "orphaned" relative to the manifest, not a mistake.
  */
-const LEGACY_NO_MANIFEST_TAGS = new Set(['jha-advanced-table'])
+const LEGACY_NO_MANIFEST_TAGS = new Set(['jha-advanced-table', 'jha-dialog'])
 
 async function loadDocs(): Promise<ComponentDoc[]> {
   const files = readdirSync(COMPONENTS_DIR).filter(f => /^jha?-.*\.ts$/.test(f))

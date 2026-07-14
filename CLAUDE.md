@@ -155,6 +155,7 @@ the whole set and do not guess.
 - `jh-toast` — A brief, transient message that confirms an action and auto-dismisses. _Import:_ `@jack-henry/jh-elements/components/toast/toast.js` — _when:_ Confirming a quick, successful action without interrupting the flow — "Copied", "Transfer sent".
 - `jh-toast-controller` — A singleton host that renders and manages toasts, queued via a global event. _Import:_ `@jack-henry/jh-elements/components/toast-controller/toast-controller.js` — _when:_ Mount once near the app root so anywhere in the app can raise a toast.
 - `jh-tooltip` — A small popover that explains a trigger element on hover or focus. _Import:_ `@jack-henry/jh-elements/components/tooltip/tooltip.js` — _when:_ Clarifying an icon-only control or terse label with a short hint.
+- `jha-dialog` — A confirm/cancel dialog card (heading, message, two actions) — the sanctioned fallback for prototypes that need a modal, since the current JH Design System has no dialog component yet. _Import:_ `@banno/jha-wc/src/jha-dialog/jha-dialog.js` — _when:_ Confirming a consequential or destructive action before it happens — "Delete this record?", "Continue without completing verification?".
 
 #### Lists
 
@@ -414,6 +415,21 @@ render() {
   `
 }
 ```
+
+### Full-height split-pane layout
+
+Use when a frame has an element meant to reach the full height of the screen — a side panel/nav rail with a divider that should run edge-to-edge, a split-pane layout, etc. Don't fake this with a fixed pixel height copied from the Figma frame (see the "Figma frame isn't a size constraint" rule above) — opt into the real available height instead:
+
+```ts
+static styles = css`
+  :host { display: block; height: 100%; }
+  .layout { display: flex; align-items: stretch; height: 100%; }
+  .panel { width: 320px; flex-shrink: 0; }  /* a fixed-width rail is fine — it's the top-level wrapper that shouldn't be fixed */
+  .content { flex: 1; min-width: 0; }       /* flexible area fills the rest and stretches via align-items: stretch */
+`
+```
+
+This works because `proto-shell.ts` gives the mounted prototype element a definite height to resolve percentages against.
 
 ---
 
