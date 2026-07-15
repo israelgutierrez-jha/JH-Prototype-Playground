@@ -489,6 +489,7 @@ function updateStatusPlugin(): Plugin {
 interface DesignerProfile {
   name: string
   onboarded: boolean
+  browserVerificationEnabled: boolean
 }
 
 const DESIGNER_PROFILE_PATH = '.designer.local.json'
@@ -500,9 +501,10 @@ async function readDesignerProfile(root: string): Promise<DesignerProfile> {
     return {
       name: typeof parsed?.name === 'string' ? parsed.name : '',
       onboarded: !!parsed?.onboarded,
+      browserVerificationEnabled: !!parsed?.browserVerificationEnabled,
     }
   } catch {
-    return { name: '', onboarded: false }
+    return { name: '', onboarded: false, browserVerificationEnabled: false }
   }
 }
 
@@ -533,10 +535,11 @@ function designerProfileWriterPlugin(): Plugin {
             const body = JSON.parse(await readRequestBody(req))
             const name = typeof body?.name === 'string' ? body.name.trim() : ''
             const onboarded = !!body?.onboarded
+            const browserVerificationEnabled = !!body?.browserVerificationEnabled
 
             if (name.length > 60) throw new Error('Name is too long (max 60 characters)')
 
-            const profile: DesignerProfile = { name, onboarded }
+            const profile: DesignerProfile = { name, onboarded, browserVerificationEnabled }
             await withFileLock(DESIGNER_PROFILE_PATH, () => writeDesignerProfile(server.config.root, profile))
 
             res.statusCode = 200

@@ -12,6 +12,7 @@ import '@jack-henry/jh-elements/components/list-item/list-item.js'
 import '@jack-henry/jh-icons/icons-wc/icon-thumbs-up.js'
 import '@jack-henry/jh-icons/icons-wc/icon-chevron-left-small.js'
 import '@jack-henry/jh-icons/icons-wc/icon-chevron-right-small.js'
+import '@jack-henry/jh-icons/icons-wc/icon-chevron-down-small.js'
 import { designerProfileReady, formatDesignerName, getDesignerName } from '../utils/designer-profile.js'
 import '@jack-henry/jh-icons/icons-wc/icon-ellipsis.js'
 // No jh-elements dialog exists yet; jha-dialog (legacy @banno/jha-wc) is the sanctioned fallback,
@@ -152,6 +153,24 @@ function saveVotedIds(ids: Set<string>) {
   localStorage.setItem(VOTED_STORAGE_KEY, JSON.stringify([...ids]))
 }
 
+// Which columns are collapsed — purely a local viewing preference, so it's
+// per-browser like votes rather than persisted through the shared JSON file.
+const COLLAPSED_COLUMNS_STORAGE_KEY = 'jh-feature-collapsed-columns'
+
+function loadCollapsedColumns(): Set<FeatureColumnId> {
+  try {
+    const raw = localStorage.getItem(COLLAPSED_COLUMNS_STORAGE_KEY)
+    const parsed = raw ? JSON.parse(raw) : []
+    return new Set(Array.isArray(parsed) ? parsed : [])
+  } catch {
+    return new Set()
+  }
+}
+
+function saveCollapsedColumns(ids: Set<FeatureColumnId>) {
+  localStorage.setItem(COLLAPSED_COLUMNS_STORAGE_KEY, JSON.stringify([...ids]))
+}
+
 @customElement('proto-features')
 export class ProtoFeatures extends LitElement {
   static styles = [
@@ -195,6 +214,14 @@ export class ProtoFeatures extends LitElement {
       display: flex;
       align-items: center;
       gap: var(--jh-dimension-200, 0.5rem);
+    }
+
+    .collapse-toggle jh-icon-chevron-down-small {
+      transition: transform 0.15s ease;
+    }
+
+    .collapse-toggle.collapsed jh-icon-chevron-down-small {
+      transform: rotate(-90deg);
     }
 
     .column-dot {
@@ -339,6 +366,7 @@ export class ProtoFeatures extends LitElement {
   @state() private _cards: FeatureCard[] = FEATURE_CARDS
   @state() private _pageError = ''
   @state() private _votedIds: Set<string> = loadVotedIds()
+  @state() private _collapsedColumns: Set<FeatureColumnId> = loadCollapsedColumns()
 
   // The id of the card whose options menu is open, or null if none is, plus
   // its resolved screen position (see computeMenuPosition) so the menu
@@ -396,6 +424,17 @@ export class ProtoFeatures extends LitElement {
 
   private _cardsFor(columnId: FeatureColumnId): FeatureCard[] {
     return this._cards.filter(c => c.column === columnId)
+  }
+
+  private _toggleColumn(columnId: FeatureColumnId) {
+    const next = new Set(this._collapsedColumns)
+    if (next.has(columnId)) {
+      next.delete(columnId)
+    } else {
+      next.add(columnId)
+    }
+    this._collapsedColumns = next
+    saveCollapsedColumns(next)
   }
 
   private _toggleMenu(id: string, e: Event) {
@@ -560,15 +599,26 @@ export class ProtoFeatures extends LitElement {
         <div class="board">
           ${FEATURE_COLUMNS.map((column, columnIndex) => {
             const cards = this._cardsFor(column.id)
+            const collapsed = this._collapsedColumns.has(column.id)
             return html`
               <div class="column">
                 <div class="column-header">
                   <div class="column-title-group">
+                    <jh-button
+                      class="collapse-toggle ${collapsed ? 'collapsed' : ''}"
+                      appearance="tertiary"
+                      size="x-small"
+                      accessible-label="${collapsed ? 'Expand' : 'Collapse'} ${column.label} column"
+                      @click=${() => this._toggleColumn(column.id)}
+                    >
+                      <jh-icon-chevron-down-small slot="jh-button-icon-left" size="small"></jh-icon-chevron-down-small>
+                    </jh-button>
                     <span class="column-dot" style="background: ${COLUMN_ACCENT[column.id]}"></span>
                     <span class="column-title">${column.label}</span>
                   </div>
                   <span class="column-count">${cards.length}</span>
                 </div>
+                ${collapsed ? '' : html`
                 <div class="cards">
                   ${cards.map(card => html`
                     <jh-card style="--jh-card-color-background: ${cardTint(column.id)}">
@@ -629,6 +679,7 @@ export class ProtoFeatures extends LitElement {
                     </jh-card>
                   `)}
                 </div>
+                `}
               </div>
             `
           })}

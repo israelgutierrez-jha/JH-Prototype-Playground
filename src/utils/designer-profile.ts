@@ -17,6 +17,7 @@ const MIRROR_KEY = 'jh-designer-profile-mirror'
 interface DesignerProfile {
   name: string
   onboarded: boolean
+  browserVerificationEnabled: boolean
 }
 
 let cache: DesignerProfile | null = null
@@ -28,9 +29,10 @@ function readMirror(): DesignerProfile {
     return {
       name: typeof parsed?.name === 'string' ? parsed.name : '',
       onboarded: !!parsed?.onboarded,
+      browserVerificationEnabled: !!parsed?.browserVerificationEnabled,
     }
   } catch {
-    return { name: '', onboarded: false }
+    return { name: '', onboarded: false, browserVerificationEnabled: false }
   }
 }
 
@@ -47,7 +49,11 @@ async function load(): Promise<void> {
     const res = await fetch(ENDPOINT)
     if (!res.ok) throw new Error('designer profile endpoint unavailable')
     const profile = await res.json()
-    cache = { name: profile.name ?? '', onboarded: !!profile.onboarded }
+    cache = {
+      name: profile.name ?? '',
+      onboarded: !!profile.onboarded,
+      browserVerificationEnabled: !!profile.browserVerificationEnabled,
+    }
     writeMirror(cache)
   } catch {
     cache = readMirror()
@@ -70,6 +76,10 @@ export function isOnboarded(): boolean {
   return !!cache?.onboarded
 }
 
+export function isBrowserVerificationEnabled(): boolean {
+  return !!cache?.browserVerificationEnabled
+}
+
 async function persist(profile: DesignerProfile): Promise<void> {
   cache = profile
   writeMirror(profile)
@@ -85,11 +95,15 @@ async function persist(profile: DesignerProfile): Promise<void> {
 }
 
 export async function setDesignerName(name: string): Promise<void> {
-  await persist({ name, onboarded: isOnboarded() })
+  await persist({ name, onboarded: isOnboarded(), browserVerificationEnabled: isBrowserVerificationEnabled() })
 }
 
 export async function setOnboarded(value: boolean): Promise<void> {
-  await persist({ name: getDesignerName() ?? '', onboarded: value })
+  await persist({ name: getDesignerName() ?? '', onboarded: value, browserVerificationEnabled: isBrowserVerificationEnabled() })
+}
+
+export async function setBrowserVerificationEnabled(value: boolean): Promise<void> {
+  await persist({ name: getDesignerName() ?? '', onboarded: isOnboarded(), browserVerificationEnabled: value })
 }
 
 /**

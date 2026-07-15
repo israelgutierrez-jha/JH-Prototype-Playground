@@ -36,18 +36,6 @@
     "column": "planned"
   },
   {
-    "id": "fr-5",
-    "title": "Search across component gotchas & examples",
-    "description": "Full-text search over every component doc, not just title/tag matches.",
-    "submittedBy": "israel-gutierrez",
-    "assignedTo": "",
-    "votes": 0,
-    "tags": [
-      "docs"
-    ],
-    "column": "requested"
-  },
-  {
     "id": "fr-7",
     "title": "Export a prototype as static HTML",
     "description": "Bundle a single prototype for sharing outside the playground, no dev server required.",
@@ -117,7 +105,7 @@
     "tags": [
       "workflow"
     ],
-    "column": "planned"
+    "column": "in-progress"
   },
   {
     "id": "feat-1783526159909-u2pba",
@@ -130,18 +118,6 @@
     "column": "shipped"
   },
   {
-    "id": "feat-1783544897359-ipeih",
-    "title": "Permissions for running commands",
-    "description": "Research for a way to allow a user to grant claude/cursor to autrun commands, not just prefill the prompt/command.",
-    "submittedBy": "William Foss",
-    "assignedTo": "",
-    "votes": 0,
-    "tags": [
-      "workflow"
-    ],
-    "column": "planned"
-  },
-  {
     "id": "feat-1783545091736-pzqxp",
     "title": "Collapse Kanban Columns",
     "description": "Ability to collapse columns (requested, planned, etc). That way the page doesn't become a long scroll. Maybe a way to archive as well?",
@@ -151,6 +127,16 @@
     "tags": [
       "workflow"
     ],
-    "column": "planned"
+    "column": "in-progress"
+  },
+  {
+    "id": "feat-1784126769125-8cpgi",
+    "title": "Integrate other design systems?",
+    "description": "Add ability to prototypes using other jack henry design systems? ie. RUI",
+    "submittedBy": "Israel Gutierrez",
+    "assignedTo": "",
+    "votes": 0,
+    "tags": [],
+    "column": "requested"
   }
 ]

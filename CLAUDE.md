@@ -450,6 +450,20 @@ This repo deploys to two separate GitHub Pages sites, from two separate repos:
 
 **Important — this is a deterrent, not real security.** There's no server here: a password check can only run in the visitor's browser, so the password's hash ships inside the JS bundle and a technically motivated visitor can extract or bypass it. Passwords are hashed (`src/utils/password-hash.ts`, SHA-256) so at least nobody sees them in plaintext in a diff, but treat this as "keeps out search engines and casual link-sharing," not as protection for anything genuinely sensitive. The CI prune step is real (non-public prototype source is deleted before the build, not merely hidden), but unrelated designer-facing modules (Templates/Resources/Features/Settings components) are still bundled — just unreachable via the UI — since they're imported unconditionally elsewhere in the app; a determined visitor reading the built JS could still find that inert code.
 
+## Browser-based verification (chrome-devtools MCP or equivalent)
+
+For UI/frontend changes, driving a real browser to click through the change and confirm it actually works is more thorough than a typecheck alone — but it costs real time and tokens per use (loading the tool's schema, page snapshots, and screenshots all add to the request).
+
+Each designer's clone has a per-machine preference for this, set on the Settings page ("Browser verification") and stored in `.designer.local.json` (gitignored, read via `getDesignerName`'s sibling `isBrowserVerificationEnabled()` in `src/utils/designer-profile.ts`, same file/endpoint pattern as the designer name — see that file's header comment for why this can't live in localStorage alone). Default is off.
+
+**Before using a browser-automation tool (chrome-devtools MCP or similar) to verify a UI change:** read `.designer.local.json` at the repo root.
+- `"browserVerificationEnabled": true` — use it freely for this session.
+- `false`, or the field/file is missing — ask the designer first, explaining the time/token cost, rather than using it silently or skipping verification silently. If they decline or don't respond, fall back to typecheck/build and ask them to eyeball the change themselves.
+
+This is a convention this file documents, not a technical restriction — nothing blocks an MCP tool call based on this file's contents, so it only works if you (the AI reading this) actually check it first.
+
+---
+
 ## Running the playground locally
 
 ```bash
