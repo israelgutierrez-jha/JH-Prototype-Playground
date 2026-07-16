@@ -15,4 +15,8 @@ export const mcpServers = [
     command: 'npx',
     args: ['chrome-devtools-mcp@latest'],
   },
+  {
+    name: 'atlassian',
+    url: 'https://mcp.atlassian.com/v1/mcp/authv2',
+  },
 ]

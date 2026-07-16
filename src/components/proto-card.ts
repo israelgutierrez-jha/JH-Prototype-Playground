@@ -47,6 +47,27 @@ export interface PrototypeMeta {
    * plaintext password here.
    */
   passwordHash?: string
+  /** URL of the Figma frame/file this prototype was built from, if any. */
+  figmaLink?: string
+  /**
+   * Snapshot of the Figma frame's name, captured by the assistant at the
+   * time `figmaLink` was last set (e.g. during `/figma-to-prototype`) — not
+   * live-fetched. Purely a nicer label; safe to leave stale/absent.
+   */
+  figmaFrameName?: string
+  /** URL of the related Jira ticket, if any. */
+  jiraLink?: string
+  /**
+   * Snapshot of the Jira ticket's key/summary, captured by the assistant via
+   * the Atlassian MCP server at the time `jiraLink` was last set — never
+   * live-fetched by the running app (no server credentials exist for that,
+   * even once deployed). Editing `jiraLink` from the in-app "Related links"
+   * dropdown clears these two fields rather than leaving them stale; ask the
+   * assistant to re-set the link to refresh them. Deliberately excludes
+   * ticket *status*, which would go stale exactly when it matters most.
+   */
+  jiraTicketKey?: string
+  jiraTicketSummary?: string
 }
 
 @customElement('proto-card')

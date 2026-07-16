@@ -29,6 +29,7 @@
     "@jkhy/frontend-utils": "file:./vendor/jkhy-frontend-utils-3.14.1.tgz",
     "@jkhy/platform-tools": "file:./vendor/jkhy-platform-tools-2.0.0.tgz",
     "@lit/context": "^1.1.6",
+    "highlight.js": "^11.11.1",
     "lit": "3.3.1"
   },
   "devDependencies": {

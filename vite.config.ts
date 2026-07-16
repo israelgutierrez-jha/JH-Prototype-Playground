@@ -57,13 +57,34 @@ function upsertMetaField(source: string, field: string, value: string | boolean)
   return source.replace(openBrace, `$1\n  ${field}: ${serialized},`)
 }
 
+// Reads back a string field's current value from meta.ts source — used both
+// to derive the response (so it reflects what's actually on disk) and to
+// detect when a link field is changing, so stale snapshot fields tied to it
+// (e.g. a Jira ticket's summary) can be cleared rather than left stale.
+function extractMetaField(source: string, field: string): string {
+  const match = source.match(new RegExp(`\\b${field}:\\s*(['"\`])((?:\\\\.|(?!\\1).)*)\\1`, 's'))
+  return match ? match[2] : ''
+}
+
 function metaHasNonEmptyPasswordHash(source: string): boolean {
-  const match = source.match(/\bpasswordHash:\s*(['"`])((?:\\.|(?!\1).)*)\1/s)
-  return !!match && match[2].length > 0
+  return extractMetaField(source, 'passwordHash').length > 0
 }
 
 function metaIsPublic(source: string): boolean {
   return /\bpublic:\s*true\b/.test(source)
+}
+
+function assertOptionalUrl(value: unknown, field: string): void {
+  if (value === undefined) return
+  if (typeof value !== 'string') throw new Error(`${field} must be a string`)
+  if (value.length > 500) throw new Error(`${field} is too long (max 500 characters)`)
+  if (value !== '' && !/^https?:\/\//.test(value)) throw new Error(`${field} must be empty or a valid http(s) URL`)
+}
+
+function assertOptionalText(value: unknown, field: string, maxLength: number): void {
+  if (value === undefined) return
+  if (typeof value !== 'string') throw new Error(`${field} must be a string`)
+  if (value.length > maxLength) throw new Error(`${field} is too long (max ${maxLength} characters)`)
 }
 
 function readRequestBody(req: import('node:http').IncomingMessage): Promise<string> {
@@ -108,7 +129,10 @@ function protoMetaWriterPlugin(): Plugin {
 
         try {
           const body = JSON.parse(await readRequestBody(req))
-          const { designer, name, title, description, public: isPublic, passwordHash } = body ?? {}
+          const {
+            designer, name, title, description, public: isPublic, passwordHash,
+            figmaLink, figmaFrameName, jiraLink, jiraTicketKey, jiraTicketSummary,
+          } = body ?? {}
 
           if (typeof designer !== 'string' || !SAFE_SEGMENT.test(designer)) {
             throw new Error('Invalid designer')
@@ -116,17 +140,26 @@ function protoMetaWriterPlugin(): Plugin {
           if (typeof name !== 'string' || !SAFE_SEGMENT.test(name)) {
             throw new Error('Invalid prototype name')
           }
-          if (typeof title !== 'string' || !title.trim()) {
-            throw new Error('Title cannot be empty')
+          // title/description/public/passwordHash: all optional-if-provided —
+          // the pencil-icon "Prototype settings" dialog sends all four, while
+          // the header's "Related links" mini-editor only ever sends
+          // figmaLink/jiraLink, so neither caller should be forced to send
+          // fields it has no draft state for.
+          if (title !== undefined) {
+            if (typeof title !== 'string' || !title.trim()) {
+              throw new Error('Title cannot be empty')
+            }
+            if (title.length > 120) {
+              throw new Error('Title is too long (max 120 characters)')
+            }
           }
-          if (title.length > 120) {
-            throw new Error('Title is too long (max 120 characters)')
-          }
-          if (typeof description !== 'string') {
-            throw new Error('Description must be a string')
-          }
-          if (description.length > 500) {
-            throw new Error('Description is too long (max 500 characters)')
+          if (description !== undefined) {
+            if (typeof description !== 'string') {
+              throw new Error('Description must be a string')
+            }
+            if (description.length > 500) {
+              throw new Error('Description is too long (max 500 characters)')
+            }
           }
           if (isPublic !== undefined && typeof isPublic !== 'boolean') {
             throw new Error('public must be a boolean')
@@ -138,6 +171,11 @@ function protoMetaWriterPlugin(): Plugin {
           if (passwordHash !== undefined && passwordHash !== '' && !/^[a-f0-9]{64}$/.test(passwordHash)) {
             throw new Error('passwordHash must be empty or a hex SHA-256 digest')
           }
+          assertOptionalUrl(figmaLink, 'figmaLink')
+          assertOptionalText(figmaFrameName, 'figmaFrameName', 200)
+          assertOptionalUrl(jiraLink, 'jiraLink')
+          assertOptionalText(jiraTicketKey, 'jiraTicketKey', 50)
+          assertOptionalText(jiraTicketSummary, 'jiraTicketSummary', 200)
 
           const filePath = path.resolve(server.config.root, 'src/prototypes', designer, name, 'meta.ts')
           const protoRoot = path.resolve(server.config.root, 'src/prototypes')
@@ -153,27 +191,63 @@ function protoMetaWriterPlugin(): Plugin {
               throw new Error(`meta.ts not found for ${designer}/${name}`)
             }
 
-            source = upsertMetaField(source, 'title', title.trim())
-            source = upsertMetaField(source, 'description', description.trim())
+            if (typeof title === 'string') source = upsertMetaField(source, 'title', title.trim())
+            if (typeof description === 'string') source = upsertMetaField(source, 'description', description.trim())
             if (typeof isPublic === 'boolean') {
               source = upsertMetaField(source, 'public', isPublic)
             }
             if (typeof passwordHash === 'string') {
               source = upsertMetaField(source, 'passwordHash', passwordHash)
             }
+
+            // Changing a link without also sending its snapshot fields in the
+            // same request means it came from the browser-side mini-editor
+            // (no MCP access there) — clear the now-unverified snapshot
+            // rather than leaving it attached to a different link.
+            if (typeof figmaLink === 'string') {
+              const currentFigmaLink = extractMetaField(source, 'figmaLink')
+              const nextFigmaLink = figmaLink.trim()
+              source = upsertMetaField(source, 'figmaLink', nextFigmaLink)
+              if (nextFigmaLink !== currentFigmaLink && typeof figmaFrameName !== 'string') {
+                source = upsertMetaField(source, 'figmaFrameName', '')
+              }
+            }
+            if (typeof figmaFrameName === 'string') {
+              source = upsertMetaField(source, 'figmaFrameName', figmaFrameName.trim())
+            }
+            if (typeof jiraLink === 'string') {
+              const currentJiraLink = extractMetaField(source, 'jiraLink')
+              const nextJiraLink = jiraLink.trim()
+              source = upsertMetaField(source, 'jiraLink', nextJiraLink)
+              if (nextJiraLink !== currentJiraLink && typeof jiraTicketKey !== 'string' && typeof jiraTicketSummary !== 'string') {
+                source = upsertMetaField(source, 'jiraTicketKey', '')
+                source = upsertMetaField(source, 'jiraTicketSummary', '')
+              }
+            }
+            if (typeof jiraTicketKey === 'string') {
+              source = upsertMetaField(source, 'jiraTicketKey', jiraTicketKey.trim())
+            }
+            if (typeof jiraTicketSummary === 'string') {
+              source = upsertMetaField(source, 'jiraTicketSummary', jiraTicketSummary.trim())
+            }
+
             await fs.writeFile(filePath, source, 'utf-8')
-            return { public: metaIsPublic(source), hasPassword: metaHasNonEmptyPasswordHash(source) }
+            return {
+              title: extractMetaField(source, 'title'),
+              description: extractMetaField(source, 'description'),
+              public: metaIsPublic(source),
+              hasPassword: metaHasNonEmptyPasswordHash(source),
+              figmaLink: extractMetaField(source, 'figmaLink'),
+              figmaFrameName: extractMetaField(source, 'figmaFrameName'),
+              jiraLink: extractMetaField(source, 'jiraLink'),
+              jiraTicketKey: extractMetaField(source, 'jiraTicketKey'),
+              jiraTicketSummary: extractMetaField(source, 'jiraTicketSummary'),
+            }
           })
 
           res.setHeader('Content-Type', 'application/json')
           res.statusCode = 200
-          res.end(JSON.stringify({
-            ok: true,
-            title: title.trim(),
-            description: description.trim(),
-            public: result.public,
-            hasPassword: result.hasPassword,
-          }))
+          res.end(JSON.stringify({ ok: true, ...result }))
         } catch (err) {
           res.setHeader('Content-Type', 'application/json')
           res.statusCode = 400

@@ -244,6 +244,7 @@ If you need to customize the platform shell itself (advanced), the components ar
 | Platform Header | `@jkhy/platform-tools/components/jh-platform-header.js` | `title`, `.navItems` (NavItem[]), `titleHref`, `titleSymbol`, `hideHeader` — slots: `header-left`, `header-right` |
 | Platform Header Nav | `@jkhy/platform-tools/components/jh-platform-header-nav.js` | `.items` (NavItem[]) — standalone nav bar; already included when you use `.navItems` on `jh-platform-header` |
 | Platform Content | `@jkhy/platform-tools/components/jh-platform-content.js` | `drawer-open`, `has-right-panel`, `has-footer` |
+| Platform Drawer | `@jkhy/platform-tools/components/jh-platform-drawer.js` | `heading`, `loading`, `layout` (`'panel'` \| `'overlay'`), `open` — slots: default (content), `drawer-header`, `drawer-actions`, `footer`; event: `close-overlay`/`close-drawer`. `layout="overlay"` renders via the native Popover API (`popover="manual"`) — the browser's top layer, entirely outside any ancestor's stacking context. Use this (not a custom `position: fixed` panel) whenever playground or app chrome needs to float content over a page without risk of colliding with that page's own layout/panels — set `--jh-drawer-overlay-backdrop: transparent` to keep the page visible/undimmed underneath instead of the default dark scrim. |
 
 ### Data Helpers (`@jack-henry/jh-datasets`)
 

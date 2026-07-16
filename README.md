@@ -43,6 +43,14 @@ This repo ships with Figma's MCP server pre-configured (`.mcp.json` for Claude C
 2. The first time you use a Figma-powered command (see [Building from a Figma design](#building-from-a-figma-design)), your editor will prompt you to authorize access — in Claude Code, run `/mcp` and choose "Authenticate"; in Cursor, open Settings → MCP and authorize the `figma` server.
 3. Approve it once in the browser tab that opens. That's it — this persists per machine.
 
+## Connect Jira (optional, one-time)
+
+This repo also ships with Atlassian's MCP server pre-configured, the same way Figma's is. It's optional — it only powers `/figma-to-prototype`'s ability to attach a Jira ticket's real title to a prototype (see [Building from a Figma design](#building-from-a-figma-design)); everything else in this playground works without it.
+
+1. Open this repo in Claude Code or Cursor.
+2. The first time `/figma-to-prototype` asks about a Jira ticket, authorize access — in Claude Code, run `/mcp` and choose "Authenticate"; in Cursor, open Settings → MCP and authorize the `atlassian` server.
+3. Approve it once in the browser tab that opens. That's it — this persists per machine. Skip it entirely and the command will just store the raw ticket URL without a title.
+
 ## Creating a prototype
 
 With Claude Code or Cursor open, type:
