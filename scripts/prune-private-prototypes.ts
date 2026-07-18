@@ -13,6 +13,7 @@ import type { PrototypeMeta } from '../src/components/proto-card.js'
 
 const PROTOTYPES_DIR = resolve('src/prototypes')
 const EXTERNAL_LINKS_PATH = resolve('src/data/external-links.json')
+const FEATURES_PATH = resolve('src/data/features.json')
 
 async function main() {
   const designers = readdirSync(PROTOTYPES_DIR, { withFileTypes: true })
@@ -53,6 +54,15 @@ async function main() {
   // unless we blank it here too, same as any other private content.
   writeFileSync(EXTERNAL_LINKS_PATH, '[]\n', 'utf-8')
   console.log('Cleared external-links.json for the external build.')
+
+  // The feature-request board is internal roadmap content (card titles,
+  // descriptions, and submittedBy/assignedTo designer names). Its route is
+  // already blocked in the external build, but features.json is statically
+  // imported by proto-features.ts (which app.ts imports unconditionally), so
+  // the raw data would still ship in the bundle unless we blank it here too —
+  // same reasoning as external-links.json above.
+  writeFileSync(FEATURES_PATH, '[]\n', 'utf-8')
+  console.log('Cleared features.json for the external build.')
 
   console.log(`Done — kept ${kept} public prototype(s), pruned ${removed}.`)
 }

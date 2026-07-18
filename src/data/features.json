@@ -37,15 +37,16 @@
   },
   {
     "id": "fr-7",
-    "title": "Export a prototype as static HTML",
-    "description": "Bundle a single prototype for sharing outside the playground, no dev server required.",
-    "submittedBy": "anonymous",
-    "assignedTo": "",
+    "title": "View sourcce of prototypes",
+    "description": "Platform guide has a view source option that lets devs see and copy how a page was built. Implement something similar",
+    "submittedBy": "Israel Gutierrez",
+    "assignedTo": "Israel Gutierrez",
     "votes": 0,
     "tags": [
-      "export"
+      "dev",
+      "handoff"
     ],
-    "column": "requested"
+    "column": "in-progress"
   },
   {
     "id": "fr-9",
@@ -105,7 +106,7 @@
     "tags": [
       "workflow"
     ],
-    "column": "in-progress"
+    "column": "shipped"
   },
   {
     "id": "feat-1783526159909-u2pba",
@@ -138,5 +139,27 @@
     "votes": 0,
     "tags": [],
     "column": "requested"
+  },
+  {
+    "id": "feat-1784303360864-ckhh3",
+    "title": "New prototoype flow",
+    "description": "Ask designers if the new prototype they want to create is from a figma design or a new one they want to create using their AI tool",
+    "submittedBy": "William Foss",
+    "assignedTo": "",
+    "votes": 0,
+    "tags": [
+      "workflow"
+    ],
+    "column": "planned"
+  },
+  {
+    "id": "feat-1784303592613-edg0r",
+    "title": "Fable Audit",
+    "description": "",
+    "submittedBy": "Israel Gutierrez",
+    "assignedTo": "Israel Gutierrez",
+    "votes": 0,
+    "tags": [],
+    "column": "planned"
   }
 ]

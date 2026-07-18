@@ -319,10 +319,12 @@ Use these in `static styles = css\`...\`` instead of raw values.
 --jh-font-size-600 = 24px   ← large heading
 --jh-font-size-700 = 28px
 --jh-font-size-800 = 32px   ← display
---jh-font-weight-regular  = 400
---jh-font-weight-semibold = 600
---jh-font-weight-bold     = 700
+--jh-font-weight-300 = 300   ← light
+--jh-font-weight-400 = 400   ← regular / body
+--jh-font-weight-500 = 500   ← medium (the closest thing to "semibold")
+--jh-font-weight-700 = 700   ← bold
 ```
+> **Font weights are numeric only.** There is **no** `--jh-font-weight-regular/-semibold/-bold` and **no `600` weight** in the token set — use the numeric tokens above. Code referencing the named tokens works only because of an inert fallback; for a semibold-ish heading use `--jh-font-weight-500`, for bold use `--jh-font-weight-700`.
 > There is **no** `--jh-font-size-100` or `-200`. Code that references them works only because the token is undefined and the rem fallback applies. Prefer the real tokens above. Note `-300`/`-400`/`-500`/`-600` **do** exist but are smaller than a `100`-scale would suggest (e.g. `-400 = 16px`, not 20px) — using them where you meant a larger size renders smaller than intended.
 
 **Line-height — important:** the `--jh-font-line-height-*` tokens are **pixel
@@ -343,7 +345,6 @@ The playground runs in dark mode by default; light/dark is toggled by the sun/mo
 --jh-color-content-brand-enabled      ← brand blue (links, accents)
 --jh-color-content-positive-enabled   ← success green
 --jh-color-content-negative-enabled   ← error red
---jh-color-content-warning-enabled    ← warning orange
 --jh-color-container-page             ← page background  (NOT -page-enabled)
 --jh-color-container-primary-enabled  ← card/panel surface  (NOT -surface-enabled)
 --jh-color-divider-primary            ← border/divider color  (NOT -border-enabled)
@@ -354,6 +355,7 @@ The playground runs in dark mode by default; light/dark is toggled by the sun/mo
 > - ✅ `--jh-color-container-primary-enabled` — card/surface background  
 > - ✅ `--jh-color-divider-primary` — borders and dividers
 > - ❌ `--jh-color-content-tertiary-enabled` does not exist — use `--jh-color-content-secondary-enabled`
+> - ❌ There is **no** `content-warning`/`container-warning` (orange/yellow) semantic pair. For a warning accent use the raw `--jh-color-yellow-*` scale (e.g. `--jh-color-yellow-400`), and never `--jh-color-container-surface-enabled` (also nonexistent) — use `--jh-color-container-secondary-enabled` for a subtle surface.
 
 ---
 

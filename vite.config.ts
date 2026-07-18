@@ -45,16 +45,22 @@ const SAFE_SEGMENT = /^[a-z0-9-]+$/
 // title/description (present in every meta.ts today) still just replace.
 function upsertMetaField(source: string, field: string, value: string | boolean): string {
   const serialized = typeof value === 'boolean' ? String(value) : JSON.stringify(value)
+  // Use replacement *functions*, not replacement strings: `serialized` is
+  // attacker-/user-influenced (a title or description containing `$'`, `` $` ``,
+  // `$&`, or `$1` would otherwise be interpreted by String.replace's special
+  // replacement patterns), which would corrupt meta.ts on write — and since
+  // every meta.ts is eagerly imported by the app, a crafted value could inject
+  // executable TypeScript. A function replacement inserts the text verbatim.
   const pattern = new RegExp(`(\\b${field}:\\s*)(?:(['"\`])(?:\\\\.|(?!\\2).)*\\2|true|false)`, 's')
   if (pattern.test(source)) {
-    return source.replace(pattern, `$1${serialized}`)
+    return source.replace(pattern, (_match, prefix: string) => `${prefix}${serialized}`)
   }
 
   const openBrace = /(meta:\s*PrototypeMeta\s*=\s*\{)/
   if (!openBrace.test(source)) {
     throw new Error('Could not find the meta object literal to update in meta.ts')
   }
-  return source.replace(openBrace, `$1\n  ${field}: ${serialized},`)
+  return source.replace(openBrace, (_match, brace: string) => `${brace}\n  ${field}: ${serialized},`)
 }
 
 // Reads back a string field's current value from meta.ts source — used both
@@ -96,6 +102,51 @@ function readRequestBody(req: import('node:http').IncomingMessage): Promise<stri
   })
 }
 
+// CSRF / cross-origin guard for the dev-only /__proto-api endpoints.
+//
+// These middlewares are registered from inside `configureServer`, which Vite
+// runs BEFORE it installs its own CORS + host-check middleware — so those
+// built-in protections never apply to our routes. Without a guard, any webpage
+// a designer happens to have open while `npm run dev` is running could fire a
+// "simple" cross-origin request (e.g. a text/plain POST, which skips the CORS
+// preflight) at these endpoints and write to disk: rewrite a prototype's
+// meta.ts, flip `public: true` to stage it for the external gallery, or
+// overwrite .designer.local.json.
+//
+// We reject a request when the browser tells us it's cross-site via
+// Sec-Fetch-Site, or when an Origin header is present and its host doesn't
+// match the server's own Host. Requests with no Origin and no cross-site fetch
+// metadata (curl, editor/CLI tooling, same-origin GETs that omit Origin) are
+// allowed through, so legitimate same-origin app usage and the slash-command
+// tooling keep working.
+function isCrossOriginRequest(req: import('node:http').IncomingMessage): boolean {
+  const secFetchSite = req.headers['sec-fetch-site']
+  if (secFetchSite === 'cross-site' || secFetchSite === 'same-site') return true
+
+  const origin = req.headers.origin
+  if (typeof origin === 'string' && origin !== '') {
+    try {
+      if (new URL(origin).host !== req.headers.host) return true
+    } catch {
+      return true // unparseable Origin — treat as hostile
+    }
+  }
+  return false
+}
+
+// Returns true (and writes a 403) if the request is cross-origin, so callers
+// can `if (rejectCrossOrigin(req, res)) return` as the first line of a handler.
+function rejectCrossOrigin(
+  req: import('node:http').IncomingMessage,
+  res: import('node:http').ServerResponse,
+): boolean {
+  if (!isCrossOriginRequest(req)) return false
+  res.setHeader('Content-Type', 'application/json')
+  res.statusCode = 403
+  res.end(JSON.stringify({ ok: false, error: 'Cross-origin requests are not allowed' }))
+  return true
+}
+
 // Every writer plugin below does read-file → modify in memory → write-file.
 // Two requests to the same file racing that sequence (e.g. two quick edits,
 // or two people using the board at once) can silently drop one write. Queue
@@ -121,6 +172,7 @@ function protoMetaWriterPlugin(): Plugin {
     apply: 'serve',
     configureServer(server) {
       server.middlewares.use('/__proto-api/meta', async (req, res) => {
+        if (rejectCrossOrigin(req, res)) return
         if (req.method !== 'POST') {
           res.statusCode = 405
           res.end('Method not allowed')
@@ -301,6 +353,7 @@ function externalLinksWriterPlugin(): Plugin {
     apply: 'serve',
     configureServer(server) {
       server.middlewares.use('/__proto-api/external-links', async (req, res) => {
+        if (rejectCrossOrigin(req, res)) return
         res.setHeader('Content-Type', 'application/json')
 
         try {
@@ -406,6 +459,7 @@ function featuresWriterPlugin(): Plugin {
     apply: 'serve',
     configureServer(server) {
       server.middlewares.use('/__proto-api/features', async (req, res) => {
+        if (rejectCrossOrigin(req, res)) return
         res.setHeader('Content-Type', 'application/json')
 
         try {
@@ -544,7 +598,8 @@ function updateStatusPlugin(): Plugin {
     name: 'proto-update-status',
     apply: 'serve',
     configureServer(server) {
-      server.middlewares.use('/__proto-api/update-status', (_req, res) => {
+      server.middlewares.use('/__proto-api/update-status', (req, res) => {
+        if (rejectCrossOrigin(req, res)) return
         res.setHeader('Content-Type', 'application/json')
         try {
           execFileSync('git', ['fetch'], { stdio: 'ignore' })
@@ -595,6 +650,7 @@ function designerProfileWriterPlugin(): Plugin {
     apply: 'serve',
     configureServer(server) {
       server.middlewares.use('/__proto-api/designer-profile', async (req, res) => {
+        if (rejectCrossOrigin(req, res)) return
         res.setHeader('Content-Type', 'application/json')
 
         try {

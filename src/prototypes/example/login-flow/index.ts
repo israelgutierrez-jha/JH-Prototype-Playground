@@ -74,17 +74,7 @@ export default class LoginFlowPrototype extends LitElement {
     }
 
     .back-link {
-      background: none;
-      border: none;
-      padding: 0;
-      color: var(--jh-color-content-brand-enabled, #0057a8);
-      font-size: var(--jh-font-size-100, 0.875rem);
-      cursor: pointer;
-      text-align: center;
-    }
-
-    .back-link:hover {
-      text-decoration: underline;
+      align-self: center;
     }
 
     .success-icon {
@@ -187,9 +177,12 @@ export default class LoginFlowPrototype extends LitElement {
           ?pending=${this._pending}
           @click=${this._submitPassword}
         ></jh-button>
-        <button class="back-link" @click=${() => { this._step = 'email'; this._error = '' }}>
-          Use a different email
-        </button>
+        <jh-button
+          class="back-link"
+          appearance="tertiary"
+          label="Use a different email"
+          @click=${() => { this._step = 'email'; this._error = '' }}
+        ></jh-button>
       </div>
     `
   }

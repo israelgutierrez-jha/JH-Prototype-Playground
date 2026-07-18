@@ -20,13 +20,16 @@ export default class MyPrototype extends LitElement {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: var(--jh-dimension-400, 2rem);
-      padding: var(--jh-dimension-600, 3rem);
+      /* --jh-* tokens are always defined; the second arg is a fallback that
+         should match the token's real PIXEL value (see CLAUDE.md token table),
+         never a rem guess — a wrong fallback silently misleads. */
+      gap: var(--jh-dimension-400, 16px);
+      padding: var(--jh-dimension-600, 24px);
     }
 
     h1 {
-      font-size: var(--jh-font-size-500, 1.5rem);
-      font-weight: var(--jh-font-weight-bold, 700);
+      font-size: var(--jh-font-size-600, 24px);
+      font-weight: var(--jh-font-weight-700, 700);
       color: var(--jh-color-content-primary-enabled, #1a1a1a);
       margin: 0;
     }
@@ -37,10 +40,10 @@ export default class MyPrototype extends LitElement {
     }
 
     .card-content {
-      padding: var(--jh-dimension-400, 2rem);
+      padding: var(--jh-dimension-400, 16px);
       display: flex;
       flex-direction: column;
-      gap: var(--jh-dimension-300, 1.5rem);
+      gap: var(--jh-dimension-300, 12px);
     }
   `
 

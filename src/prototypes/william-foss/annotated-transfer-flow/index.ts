@@ -276,18 +276,14 @@ export default class AnnotatedTransferFlow extends LitElement {
             ${this._field(
               2,
               html`
-                <jh-select label="From account" required>
-                  ${ACCOUNTS.map(a => html`<jh-list-item value=${a.value} label=${a.label}></jh-list-item>`)}
-                </jh-select>
+                <jh-select label="From account" required .options=${ACCOUNTS}></jh-select>
               `
             )}
 
             ${this._field(
               2,
               html`
-                <jh-select label="To account" required>
-                  ${ACCOUNTS.map(a => html`<jh-list-item value=${a.value} label=${a.label}></jh-list-item>`)}
-                </jh-select>
+                <jh-select label="To account" required .options=${ACCOUNTS}></jh-select>
               `
             )}
 
