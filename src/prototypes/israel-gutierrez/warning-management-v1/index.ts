@@ -6,8 +6,13 @@ import { parseRoute, type Route } from './routing.js'
 
 export default class WarningManagementPrototype extends LitElement {
   static styles = css`
+    /* height: 100% so the chain reaches wm-detail-view's own :host{height:100%}
+       (needed for its jh-platform-content right panel) — a percentage height
+       on a child only resolves against a parent whose own height is definite,
+       not auto/shrink-to-content, so this link in the chain can't be skipped. */
     :host {
       display: block;
+      height: 100%;
     }
   `
 

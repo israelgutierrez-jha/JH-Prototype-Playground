@@ -16,3 +16,7 @@ export function goToQueue() {
 export function goToDetail(id: string) {
   window.location.hash = `${BASE_HASH}/warning/${encodeURIComponent(id)}`
 }
+
+export function goToNew() {
+  goToDetail('new')
+}

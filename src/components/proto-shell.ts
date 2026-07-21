@@ -216,8 +216,10 @@ export class ProtoShell extends LitElement {
 
   // Read-only, so a plain Vite `?raw` glob is enough — no dev-server endpoint
   // needed (unlike /__proto-api/meta, which exists only because that feature
-  // writes back to disk).
-  private _sourceModules = import.meta.glob('../prototypes/**/index.ts', {
+  // writes back to disk). Globs every .ts file, not just index.ts, since many
+  // prototypes (like warning-management-v1) split logic across sibling files
+  // — showing only index.ts would silently omit most of the actual code.
+  private _sourceModules = import.meta.glob('../prototypes/**/*.ts', {
     query: '?raw',
     import: 'default',
   }) as Record<string, () => Promise<string>>
@@ -433,18 +435,43 @@ export class ProtoShell extends LitElement {
     }
   }
 
+  // File order: entry point first, then meta, then everything else
+  // alphabetically — mirrors how a developer would actually want to read
+  // through the prototype's own files.
+  private _sourceFileOrder(path: string): [number, string] {
+    const file = path.split('/').pop() ?? path
+    if (file === 'index.ts') return [0, file]
+    if (file === 'meta.ts') return [1, file]
+    return [2, file]
+  }
+
+  // Always fetched fresh on open (no caching across opens) so the panel can
+  // never show stale content from before an edit — the whole point of this
+  // panel is to compare code against the currently-running prototype.
   private async _toggleSourceDrawer() {
     if (this._sourceOpen) {
       this._sourceOpen = false
       return
     }
-    if (!this._sourceText) {
-      const key = `../prototypes/${this.designer}/${this.name}/index.ts`
-      const loadSource = this._sourceModules[key]
-      if (loadSource) {
-        this._sourceText = await loadSource()
-      }
-    }
+    const prefix = `../prototypes/${this.designer}/${this.name}/`
+    const keys = Object.keys(this._sourceModules)
+      .filter(key => key.startsWith(prefix))
+      .sort((a, b) => {
+        const [rankA, fileA] = this._sourceFileOrder(a)
+        const [rankB, fileB] = this._sourceFileOrder(b)
+        return rankA !== rankB ? rankA - rankB : fileA.localeCompare(fileB)
+      })
+
+    const files = await Promise.all(
+      keys.map(async key => ({
+        name: key.slice(prefix.length),
+        text: await this._sourceModules[key](),
+      }))
+    )
+
+    this._sourceText = files
+      .map(f => `// ${'─'.repeat(4)} ${f.name} ${'─'.repeat(Math.max(0, 60 - f.name.length))}\n\n${f.text}`)
+      .join('\n\n')
     this._sourceOpen = true
   }
 
